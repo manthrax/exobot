@@ -74,7 +74,7 @@ function start() {
     camYaw.add(camPitch);
     camPitch.add(camera);
 
-    body.rotation.x = Math.PI;
+    //body.rotation.x = Math.PI;
     
     scene.add(body);
     body.add(mesh);
@@ -177,8 +177,8 @@ function start() {
     function mup(event) {
         bgClicked = false;
         send({stop:true});
-        event.preventDefault();
-        return true;
+        //event.preventDefault();
+        //return true;
     }
     function mmove(evt) {
 
