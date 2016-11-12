@@ -1,6 +1,7 @@
 function start() {
     var connection = new WebSocket('ws://' + location.host ,['soap', 'xmpp']);
     // When the connection is open, send some data to the server
+    var connected = true;
     connection.onopen = function() {
         connection.send('Ping');
         // Send the message 'Ping' to the server
@@ -109,6 +110,10 @@ function start() {
                     if (bones[i].axis == ax) {
                         bones[i].value = bval;
                         bones[i].joint.rotation[ax] = ang;
+
+                        if(connected)
+                            connection.send(JSON.stringify({c:i,v:bval}))
+                        
                     }
             } else {
                 selectedBone.value = bval;

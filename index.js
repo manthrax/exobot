@@ -20,9 +20,9 @@ var pwm = makePwm({"freq": 60, "correctionFactor": 1.118});
 //	pwm.stop();
 
 //pwm.setFrequency(60);
-pwm.setPwm(0, 0, servoMid);
+//pwm.setPwm(0, 0, servoMid);
 //pwm.setPulse(channel, pulse);
-pwm.stop();
+//pwm.stop();
 
 
 app.use(function(req, res, next) {
@@ -83,9 +83,12 @@ wss.on("connection", function(ws) {
 		try{
 			var data = JSON.parse(msg);
 			//console.log("Got message from:",ws.playerId," : ",msg)
-			data.obj = ws.playerId;	//slam playerID
+			//data.obj = ws.playerId;	//slam playerID
 			//GameServer.processEvent(data,ws);
+			if(data.c!=undefined && data.v!=undefined){
 
+				pwm.setPwm(data.c, 0, (servoMid+(servoRng*data.v*0.5))|0);
+			}
 			if(data.restartServer)
 				setTimeout(function(){
 					//Cause the server to restart....
