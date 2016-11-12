@@ -160,6 +160,7 @@ function start() {
     }
     function mup(event) {
         bgClicked = false;
+        send({stop:true});
     }
     function mmove(evt) {
 
