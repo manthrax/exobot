@@ -28,6 +28,7 @@ function start() {
     
     resetButton.onclick = function(e){
         send({restartServer:true});
+        setTimeout(function(){location.reload();},5000);
     }
     
     var renderer = new THREE.WebGLRenderer({
