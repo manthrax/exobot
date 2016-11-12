@@ -89,6 +89,9 @@ wss.on("connection", function(ws) {
 				console.log("c:"+data.c+" v:"+data.v);
 				pwm.setPwm(data.c, 0, (servoMid+(servoRng*data.v*0.5))|0);
 			}
+			if(data.stop){
+				pwm.stop();
+			}
 			if(data.restartServer)
 				setTimeout(function(){
 					//Cause the server to restart....
