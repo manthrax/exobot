@@ -69,7 +69,7 @@ function start() {
     var camPitch = new THREE.Object3D();
 
     camPitch.rotation.x = pi2*0.85;
-    
+
     body.add(camYaw);
     camYaw.add(camPitch);
     camPitch.add(camera);
@@ -185,6 +185,15 @@ function start() {
         if(bgClicked){
             camYaw.rotation.y+=evt.movementX*0.001;
             camPitch.rotation.x+=evt.movementY*0.001;
+        }else if(selectedBone!=undefined){
+           
+            selectedBone.value += evt.movementX*0.001;
+            selectedBone.value = selectedBone.value<-1?-1:selectedBone.value>1?1:selectedBone.value;
+
+            var ang = selectedBone.value * jointRangeRadians;
+                
+            selectedBone.joint.rotation[selectedBone.axis] = ang;
+            send({c:bones.indexOf(selectedBone),v:selectedBone.value});
         }
 
     }
