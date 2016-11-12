@@ -3,7 +3,7 @@ function start() {
     // When the connection is open, send some data to the server
     var connected = true;
     connection.onopen = function() {
-        connection.send('Ping');
+        //connection.send('Ping');
         // Send the message 'Ping' to the server
     }
     
