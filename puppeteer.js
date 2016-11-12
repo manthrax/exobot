@@ -44,8 +44,8 @@ function start() {
     0.1,// Near
     10000 // Far
     );
-    camera.position.set(-15, 10, 15);
-    camera.lookAt(scene.position);
+
+
     var geometry = new THREE.CylinderGeometry(2.5,2.5,0.5,nseg);
     //BoxGeometry( 5, 5, 5 );
     var material = new THREE.MeshPhongMaterial({
@@ -60,6 +60,12 @@ function start() {
     var mesh = new THREE.Mesh(geometry,material);
     //mesh.rotation.y += (pi2/nseg)*0.5
     var body = new THREE.Object3D();
+
+    var pos = new THREE.Vector3(0,0,15);
+    camera.position.set(0,0,15);//(-15, 10, 15);
+    //camera.lookAt(scene.position);
+    body.add(camera);
+
     scene.add(body);
     body.add(mesh);
     var bones = [];
@@ -132,7 +138,7 @@ function start() {
                 selectedBone.value = bval;
                 selectedBone.joint.rotation[selectedBone.axis] = ang;
 
-                send({c:bones.indexOf(selectedBone),v:-bval});
+                send({c:bones.indexOf(selectedBone),v:bval});
 
             }
         }
