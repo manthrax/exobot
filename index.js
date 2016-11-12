@@ -22,7 +22,7 @@ var pwm = makePwm({"freq": 60, "correctionFactor": 1.118});
 //pwm.setFrequency(60);
 //pwm.setPwm(0, 0, servoMid);
 //pwm.setPulse(channel, pulse);
-//pwm.stop();
+pwm.stop();
 
 
 app.use(function(req, res, next) {
