@@ -86,8 +86,9 @@ wss.on("connection", function(ws) {
 			//data.obj = ws.playerId;	//slam playerID
 			//GameServer.processEvent(data,ws);
 			if(data.c!=undefined && data.v!=undefined){
-				console.log("c:"+data.c+" v:"+data.v);
-				pwm.setPwm(data.c, 0, (servoMid+(servoRng*data.v*0.5))|0);
+				var sval = (servoMid+(servoRng*data.v*0.5))|0
+				console.log("c:"+data.c+" v:"+data.v+"-->"+sval);
+				pwm.setPwm(data.c, 0, sval);
 			}
 			if(data.stop){
 				pwm.stop();
