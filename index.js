@@ -3,6 +3,28 @@ var http = require("http")
 var express = require("express")
 var app = express()
 
+var makePwm = require( "adafruit-pca9685" );
+
+
+# Configure min and max servo pulse lengths
+var servoMin = 150  // Min pulse length out of 4096
+var servoMax = 600  // Max pulse length out of 4096
+
+var servoMid = ((servoMin+servoMax)/2)|0
+var servoRng = servoMax-servoMin;
+
+var pwm = makePwm();
+
+//	pwm.setPwm(ch, 0, v); 
+//	pwm.setPulse(ch, v); 
+//	pwm.stop();
+
+pwm.setFrequency(60);
+pwm.setPwm(0, 0, servoMid);
+//pwm.setPulse(channel, pulse);
+pwm.stop();
+
+
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
