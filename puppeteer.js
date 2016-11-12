@@ -74,7 +74,7 @@ function start() {
     camYaw.add(camPitch);
     camPitch.add(camera);
 
-    //body.rotation.x = Math.PI;
+    body.rotation.x = Math.PI;
     
     scene.add(body);
     body.add(mesh);
