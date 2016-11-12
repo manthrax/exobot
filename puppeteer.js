@@ -1,5 +1,5 @@
 function start() {
-    var connection = new WebSocket('ws://',['soap', 'xmpp']);
+    var connection = new WebSocket('ws://' + location.host ,['soap', 'xmpp']);
     // When the connection is open, send some data to the server
     connection.onopen = function() {
         connection.send('Ping');
