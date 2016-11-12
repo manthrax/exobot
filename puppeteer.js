@@ -157,7 +157,9 @@ function start() {
     var selectedMesh;
     var selectedBone;
     var bgClicked;
+    var buttons = 0;
     function mdown(event) {
+        buttons |= 1<<event.button;
         if (lastHit) {
             if (lastHit != selectedMesh) {
                 if (selectedMesh)
@@ -170,11 +172,12 @@ function start() {
                 }
             }
         } else {
-            //} if(event.target==canv){
-            bgClicked = true;
+            if(buttons!=0)
+                bgClicked = true;
         }
     }
     function mup(event) {
+        buttons &= ~(1<<event.button);
         bgClicked = false;
         send({stop:true});
         //event.preventDefault();
