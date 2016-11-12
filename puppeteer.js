@@ -169,7 +169,7 @@ function start() {
 
     }
     window.addEventListener('mousedown', mdown, false);
-    //    window.addEventListener('mouseup', mup, false);
+    window.addEventListener('mouseup', mup, false);
     window.addEventListener('mousemove', mmove, false);
     function render() {
         requestAnimationFrame(render);
