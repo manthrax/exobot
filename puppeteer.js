@@ -1,4 +1,21 @@
 function start() {
+    var connection = new WebSocket('ws://',['soap', 'xmpp']);
+    // When the connection is open, send some data to the server
+    connection.onopen = function() {
+        connection.send('Ping');
+        // Send the message 'Ping' to the server
+    }
+    
+    // Log errors
+    connection.onerror = function(error) {
+        console.log('WebSocket Error ' + error);
+    }
+    
+    // Log messages from the server
+    connection.onmessage = function(e) {
+        console.log('Server: ' + e.data);
+    }
+    
     var renderer = new THREE.WebGLRenderer({
         canvas: canv
     });
@@ -86,14 +103,15 @@ function start() {
         if (selectedBone) {
             var bval = ((angleSlider.value | 0) / 50) - 1;
             var ang = selectedBone.value * jointRangeRadians;
-            if(allCheckbox.checked == true){
+            if (allCheckbox.checked == true) {
                 var ax = selectedBone.axis;
-                for(var i=0;i<bones.length;i++)if(bones[i].axis==ax){
-                    bones[i].value = bval;
-                    bones[i].joint.rotation[ax] = ang;
-                }
-            }else{
-                selectedBone.value =bval;
+                for (var i = 0; i < bones.length; i++)
+                    if (bones[i].axis == ax) {
+                        bones[i].value = bval;
+                        bones[i].joint.rotation[ax] = ang;
+                    }
+            } else {
+                selectedBone.value = bval;
                 selectedBone.joint.rotation[selectedBone.axis] = ang;
             }
         }
@@ -119,13 +137,13 @@ function start() {
             bgClicked = true;
         }
     }
-    function mup(event) {bgClicked = false;}
-    function mmove(evt) {
+    function mup(event) {
+        bgClicked = false;
     }
+    function mmove(evt) {}
     window.addEventListener('mousedown', mdown, false);
-//    window.addEventListener('mouseup', mup, false);
+    //    window.addEventListener('mouseup', mup, false);
     window.addEventListener('mousemove', mmove, false);
-
     function render() {
         requestAnimationFrame(render);
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -139,7 +157,7 @@ function start() {
             lastHit.material = material;
             lastHit = undefined;
         }
-        if(intersects.length>0){
+        if (intersects.length > 0) {
             lastHit = intersects[0].object;
             if (lastHit != selectedMesh)
                 lastHit.material = hiMaterial;
