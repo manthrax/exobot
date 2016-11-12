@@ -13,13 +13,13 @@ var servoMax = 600  // Max pulse length out of 4096
 var servoMid = ((servoMin+servoMax)/2)|0
 var servoRng = servoMax-servoMin;
 
-var pwm = makePwm();
+var pwm = makePwm({"freq": 60, "correctionFactor": 1.118});
 
 //	pwm.setPwm(ch, 0, v); 
 //	pwm.setPulse(ch, v); 
 //	pwm.stop();
 
-pwm.setFrequency(60);
+//pwm.setFrequency(60);
 pwm.setPwm(0, 0, servoMid);
 //pwm.setPulse(channel, pulse);
 pwm.stop();
