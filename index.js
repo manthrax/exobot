@@ -14,7 +14,7 @@ process.argv.forEach(function (val, index, array) {
   console.log(index + ': ' + val);
 });
 
-var serveRoot = "\\";
+var serveRoot = "";
 var servePort;
 
 var args = process.argv;
