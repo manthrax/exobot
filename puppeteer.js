@@ -161,7 +161,13 @@ function start() {
     function mup(event) {
         bgClicked = false;
     }
-    function mmove(evt) {}
+    function mmove(evt) {
+
+        if(bgClicked){
+            body.rotation.y+=evt.movementX*0.001;
+        }
+
+    }
     window.addEventListener('mousedown', mdown, false);
     //    window.addEventListener('mouseup', mup, false);
     window.addEventListener('mousemove', mmove, false);
@@ -184,7 +190,7 @@ function start() {
                 lastHit.material = hiMaterial;
         }
         renderer.render(scene, camera);
-        body.rotation.y += 0.001;
+        //body.rotation.y += 0.001;
     }
     requestAnimationFrame(render);
 }
