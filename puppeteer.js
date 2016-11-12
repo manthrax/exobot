@@ -5,6 +5,7 @@ function start() {
     connection.onopen = function() {
         //connection.send('Ping');
         // Send the message 'Ping' to the server
+        connected = true;
     }
     
     // Log errors

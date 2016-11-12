@@ -70,7 +70,7 @@ wss.on("connection", function(ws) {
 
 	//ws.playerId = playerIdBase++;
 
-	console.log("websocket connection open:",ws.playerId)
+	console.log("websocket connection opened..");//,ws.playerId)
 
 	//GameServer.processEvent({cmd:'connected',obj:ws.playerId},ws); //Broadcast to all
 
