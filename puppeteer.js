@@ -132,7 +132,7 @@ function start() {
                 selectedBone.value = bval;
                 selectedBone.joint.rotation[selectedBone.axis] = ang;
 
-                send({c:bones.indexOf(selectedBone),v:bval});
+                send({c:bones.indexOf(selectedBone),v:-bval});
 
             }
         }
