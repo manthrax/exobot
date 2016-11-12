@@ -6,7 +6,7 @@ var app = express()
 var makePwm = require( "adafruit-pca9685" );
 
 
-# Configure min and max servo pulse lengths
+// Configure min and max servo pulse lengths
 var servoMin = 150  // Min pulse length out of 4096
 var servoMax = 600  // Max pulse length out of 4096
 
