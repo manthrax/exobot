@@ -17,6 +17,18 @@ function start() {
     connection.onmessage = function(e) {
         console.log('Server: ' + e.data);
     }
+    function send(obj){
+        if(connected){
+            connection.send(JSON.stringify(obj));
+        }
+    }
+    stopButton.onclick = function(e){
+        send({stop:true});
+    }
+    
+    resetButton.onclick = function(e){
+        send({restartServer:true});
+    }
     
     var renderer = new THREE.WebGLRenderer({
         canvas: canv
@@ -112,13 +124,15 @@ function start() {
                         bones[i].value = bval;
                         bones[i].joint.rotation[ax] = ang;
 
-                        if(connected)
-                            connection.send(JSON.stringify({c:i,v:bval}))
+                        send({c:i,v:bval});
                         
                     }
             } else {
                 selectedBone.value = bval;
                 selectedBone.joint.rotation[selectedBone.axis] = ang;
+
+                send({c:bones.indexOf(selectedBone),v:bval});
+
             }
         }
     }
