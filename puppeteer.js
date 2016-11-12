@@ -172,6 +172,7 @@ function start() {
     function mup(event) {
         bgClicked = false;
         send({stop:true});
+        event.preventDefault();
     }
     function mmove(evt) {
 
