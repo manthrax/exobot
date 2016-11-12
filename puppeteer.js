@@ -68,7 +68,7 @@ function start() {
     var camYaw = new THREE.Object3D();
     var camPitch = new THREE.Object3D();
 
-    camPitch.rotation.x = pi2*0.75;
+    camPitch.rotation.x = pi2*0.85;
     
     body.add(camYaw);
     camYaw.add(camPitch);
@@ -129,7 +129,7 @@ function start() {
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     }
     window.addEventListener('mousemove', onMouseMove, false);
-    var jointRangeRadians = Math.PI * 0.45;
+    var jointRangeRadians = Math.PI * 0.5;
     angleSlider.oninput = function(evt) {
         if (selectedBone) {
             var bval = ((angleSlider.value | 0) / 50) - 1;
