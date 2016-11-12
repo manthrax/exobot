@@ -175,6 +175,7 @@ function start() {
         bgClicked = false;
         send({stop:true});
         event.preventDefault();
+        return true;
     }
     function mmove(evt) {
 
