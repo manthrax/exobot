@@ -64,7 +64,12 @@ function start() {
     var pos = new THREE.Vector3(0,0,15);
     camera.position.set(0,0,15);//(-15, 10, 15);
     //camera.lookAt(scene.position);
-    body.add(camera);
+
+    var camYaw = new THREE.Object3D();
+    var camPitch = new THREE.Object3D();
+    body.add(camYaw);
+    camYaw.add(camPitch);
+    camPitch.add(camera);
 
     scene.add(body);
     body.add(mesh);
@@ -171,7 +176,8 @@ function start() {
     function mmove(evt) {
 
         if(bgClicked){
-            body.rotation.y+=evt.movementX*0.001;
+            camYaw.rotation.y+=evt.movementX*0.001;
+            camPitch.rotation.x+=evt.movementY*0.001;
         }
 
     }
