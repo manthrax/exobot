@@ -68,7 +68,7 @@ function start() {
     var camYaw = new THREE.Object3D();
     var camPitch = new THREE.Object3D();
 
-    camYaw.rotation.x = pi2*0.75;
+    camPitch.rotation.x = pi2*0.75;
     
     body.add(camYaw);
     camYaw.add(camPitch);
