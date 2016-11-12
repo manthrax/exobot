@@ -1,9 +1,24 @@
+<!DOCTYPE html>
 <html>
 <script type='text/javascript' src='three.js'></script>
 <script type='text/javascript' src='puppeteer.js'></script>
 
 <body style='background:#000000; margin:0px;' onload='start();'>
+
+<div style='position: absolute; top: 30px; left: 30px; z-index: 20;'>
+<input type="range" name="Angle" id="angleSlider" value="50" min="0" max="100" steps='100' list="steplist">
+<datalist id="steplist">
+    <option>0</option>
+    <option>25</option>
+    <option>50</option>
+    <option>75</option>
+    <option>100</option>
+</datalist>
+</input>
+<input type='checkbox'id='allCheckbox'>all</input>
+</div>
 <canvas style='display:block;width:100%; height:100%;' id='canv'>
 <canvas>
+
 </body>
 </html>
