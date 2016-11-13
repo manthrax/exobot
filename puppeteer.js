@@ -17,11 +17,19 @@ function start() {
     connection.onmessage = function(e) {
         console.log('Server: ' + e.data);
     }
+
     function send(obj){
         if(connected){
+            try{
             connection.send(JSON.stringify(obj));
+            }
+            catch(err){
+                console.log(err);
+                connected = false;
+            }
         }
     }
+    
     stopButton.onclick = function(e){
         send({stop:true});
     }
