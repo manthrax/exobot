@@ -5,7 +5,8 @@
 
 <body style='background:#000000; margin:0px;' onload='start();'>
 
-<div style='position: absolute; top: 30px; left: 30px; z-index: 20;'>
+<div style='position: absolute; top: 5px; left: 5px; z-index: 20; background:rgba(255,255,255,0.5);'>
+
 <input type="range" name="Angle" id="angleSlider" value="50" min="0" max="100" steps='100' list="steplist">
 <datalist id="steplist">
     <option>0</option>
@@ -15,9 +16,10 @@
     <option>100</option>
 </datalist>
 </input>
-<input type='checkbox'id='allCheckbox'>all</input>
-<input type='button'id='stopButton'>stop</input>
-<input type='button'id='resetButton'>reset</input>
+<input type='checkbox' id='allCheckbox'>all</input>
+<input type='button' id='stopButton'>stop</input>
+<input type='button' id='resetButton'>reset</input>
+<a id='statusLabel'>Status:</a><a id='statusText'>disconnected</a>
 </div>
 <canvas style='display:block;width:100%; height:100%;' id='canv'>
 <canvas>

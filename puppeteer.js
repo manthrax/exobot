@@ -1,48 +1,51 @@
 function start() {
     var connected = false;
-    try{
-        var connection = new WebSocket('ws://' + location.host ,['soap', 'xmpp']);
-         connection.onopen = function() {
+    function showStatus(str) {
+        console.log(str);
+        statusText.innerHTML = str;
+    }
+    try {
+        var connection = new WebSocket('ws://' + location.host,['soap', 'xmpp']);
+        connection.onopen = function() {
             //connection.send('Ping');
             // Send the message 'Ping' to the server
             connected = true;
+            statusText.innerHTML = 'Connected!';
         }
-
         // Log errors
         connection.onerror = function(error) {
-            console.log('WebSocket Error ' + error);
+            showStatus('WebSocket Error ' + error);
         }
-
         // Log messages from the server
         connection.onmessage = function(e) {
             console.log('Server: ' + e.data);
         }
+    } catch (err) {
+        showStatus("Robot socket not available!")
     }
-    catch(err){
-        console.log("Robot socket not available!")
-    }
-
-    function send(obj){
-        if(connected){
-            try{
-            connection.send(JSON.stringify(obj));
-            }
-            catch(err){
-                console.log(err);
+    function send(obj) {
+        if (connected) {
+            try {
+                connection.send(JSON.stringify(obj));
+            } catch (err) {
+                showStatus(err);
                 connected = false;
             }
         }
     }
-    
-    stopButton.onclick = function(e){
-        send({stop:true});
+    stopButton.onclick = function(e) {
+        send({
+            stop: true
+        });
     }
-    
-    resetButton.onclick = function(e){
-        send({restartServer:true});
-        setTimeout(function(){location.reload();},5000);
+    resetButton.onclick = function(e) {
+        send({
+            restartServer: true
+        });
+        setTimeout(function() {
+            location.reload();
+        }, 5000);
     }
-    
     var renderer = new THREE.WebGLRenderer({
         canvas: canv
     });
@@ -56,8 +59,6 @@ function start() {
     0.1,// Near
     10000 // Far
     );
-
-
     var geometry = new THREE.CylinderGeometry(2.5,2.5,0.5,nseg);
     //BoxGeometry( 5, 5, 5 );
     var material = new THREE.MeshPhongMaterial({
@@ -72,22 +73,16 @@ function start() {
     var mesh = new THREE.Mesh(geometry,material);
     //mesh.rotation.y += (pi2/nseg)*0.5
     var body = new THREE.Object3D();
-
-    var pos = new THREE.Vector3(0,0,15);
-    camera.position.set(0,0,15);//(-15, 10, 15);
+    camera.position.set(0, 0, 22);
+    //(-15, 10, 15);
     //camera.lookAt(scene.position);
-
     var camYaw = new THREE.Object3D();
     var camPitch = new THREE.Object3D();
-
-    camPitch.rotation.x = pi2*0.85;
-
+    camPitch.rotation.x = pi2 * 0.85;
     body.add(camYaw);
     camYaw.add(camPitch);
     camPitch.add(camera);
-
     //body.rotation.x = Math.PI;
-    
     scene.add(body);
     body.add(mesh);
     var bones = [];
@@ -142,6 +137,10 @@ function start() {
     }
     window.addEventListener('mousemove', onMouseMove, false);
     var jointRangeRadians = Math.PI * 0.5;
+
+    
+
+
     angleSlider.oninput = function(evt) {
         if (selectedBone) {
             var bval = ((angleSlider.value | 0) / 50) - 1;
@@ -152,16 +151,18 @@ function start() {
                     if (bones[i].axis == ax) {
                         bones[i].value = bval;
                         bones[i].joint.rotation[ax] = ang;
-
-                        send({c:i,v:bval});
-                        
+                        send({
+                            c: i,
+                            v: bval
+                        });
                     }
             } else {
                 selectedBone.value = bval;
                 selectedBone.joint.rotation[selectedBone.axis] = ang;
-
-                send({c:bones.indexOf(selectedBone),v:bval});
-
+                send({
+                    c: bones.indexOf(selectedBone),
+                    v: bval
+                });
             }
         }
     }
@@ -171,7 +172,8 @@ function start() {
     var bgClicked;
     var buttons = 0;
     function mdown(event) {
-        buttons |= 1<<event.button;
+        if(event.target!=canv)return;
+        buttons |= 1 << event.button;
         if (lastHit) {
             if (lastHit != selectedMesh) {
                 if (selectedMesh)
@@ -184,36 +186,39 @@ function start() {
                 }
             }
         } else {
-            if(buttons!=0)
+            if (buttons != 0)
                 bgClicked = true;
         }
     }
     function mup(event) {
-        buttons &= ~(1<<event.button);
+        buttons &= ~(1 << event.button);
         bgClicked = false;
-        send({stop:true});
+        send({
+            stop: true
+        });
+        lastHit = undefined;
         //event.preventDefault();
         //return true;
     }
     function mmove(evt) {
-
-        if(bgClicked){
-            camYaw.rotation.y+=evt.movementX*0.001;
-            camPitch.rotation.x+=evt.movementY*0.001;
-        }else if(selectedBone!=undefined && buttons==1){
-           
-            selectedBone.value += evt.movementX*0.001;
-            selectedBone.value = selectedBone.value<-1?-1:selectedBone.value>1?1:selectedBone.value;
-
+        if (bgClicked) {
+            camYaw.rotation.y += evt.movementX * 0.01;
+            camPitch.rotation.x += evt.movementY * 0.01;
+        } else if (selectedBone != undefined && buttons == 1) {
+            selectedBone.value += (selectedBone.axis=='y'?evt.movementX:evt.movementY) * 0.01;
+            selectedBone.value = selectedBone.value < -1 ? -1 : selectedBone.value > 1 ? 1 : selectedBone.value;
             var ang = selectedBone.value * jointRangeRadians;
-                
             selectedBone.joint.rotation[selectedBone.axis] = ang;
-            send({c:bones.indexOf(selectedBone),v:selectedBone.value});
+            send({
+                c: bones.indexOf(selectedBone),
+                v: selectedBone.value
+            });
         }
-
     }
+
     window.addEventListener('mousedown', mdown, false);
     window.addEventListener('mouseup', mup, false);
+    window.addEventListener('mouseout', mup, false);
     window.addEventListener('mousemove', mmove, false);
     function render() {
         requestAnimationFrame(render);

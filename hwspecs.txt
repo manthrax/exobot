@@ -21,3 +21,24 @@ https://www.amazon.com/TowerPro-Micro-Airplane-Helicopter-Controls/dp/B01D6FEI1W
 
 
 16+20+37+22 = 95$
+
+
+
+
+
+
+
+sudo apt-get update
+sudo apt-get install node
+sudo npm install http
+sudo npm install express
+sudo npm install ws
+sudo npm install adafruit-pca9685
+
+sudo nano /etc/rc.local
+
+Add this before the "exit 0" line.. this makes the bot code launch at startup.
+
+su pi -c '~/bot/exobot/nodebot.sh < /dev/null &'
+
+
