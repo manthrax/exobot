@@ -2,9 +2,14 @@ var WebSocketServer = require("ws").Server
 var http = require("http")
 var express = require("express")
 var app = express()
-
-var makePwm = require( "adafruit-pca9685" );
-
+var makePwm;
+try{
+ 	makePwm = require( "adafruit-pca9685" );
+}
+catch(err){
+	console.log("Couldn't load pwm library.")
+	makePwm=function(){return {stop:function(){},setPwm:function(){}}}
+}
 
 // Configure min and max servo pulse lengths
 var servoMin = 150  // Min pulse length out of 4096
@@ -86,8 +91,8 @@ wss.on("connection", function(ws) {
 			//data.obj = ws.playerId;	//slam playerID
 			//GameServer.processEvent(data,ws);
 			if(data.c!=undefined && data.v!=undefined){
-				var sval = (servoMid+(servoRng*data.v*0.5))|0
-				console.log("c:"+data.c+" v:"+data.v+"-->"+sval);
+				var sval = data.v|0;
+				console.log("c:"+data.c+" v:"+sval);
 				pwm.setPwm(data.c, 0, sval);
 			}
 			if(data.stop){
