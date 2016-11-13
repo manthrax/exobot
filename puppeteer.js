@@ -174,6 +174,8 @@ function start() {
             value: 0
         }
         bones.push(joint)
+
+		//			shoulder.add( new THREE.BoxHelper( mesh ) );
     }
 
     var light = new THREE.SpotLight(0xFFFFFF);
@@ -269,15 +271,17 @@ var servoRng = servoMax-servoMin;
     function mdown(event) {
         if(event.target!=canv)return;
         buttons |= 1 << event.button;
-        if (hilightedMesh && (hilightedMesh.bone!=undefined) && (hilightedMesh != selectedMesh)) {
-    
-            if (selectedMesh)
-                selectedMesh.material = selectedMesh.userData.material;
-            selectedMesh = hilightedMesh;
-            selectedMesh.material = selMaterial;
-            selectedBone = jointsByMeshId[selectedMesh.id];
-            if (selectedBone) {
-                this.angleSlider.value = (selectedBone.value + 1) * 50;
+        if (hilightedMesh && (hilightedMesh.bone!=undefined)) {
+            if(hilightedMesh != selectedMesh)
+            {
+                if (selectedMesh)
+                    selectedMesh.material = selectedMesh.userData.material;
+                selectedMesh = hilightedMesh;
+                selectedMesh.material = selMaterial;
+                selectedBone = jointsByMeshId[selectedMesh.id];
+                if (selectedBone) {
+                    this.angleSlider.value = (selectedBone.value + 1) * 50;
+                }
             }
             
         } else {
@@ -341,11 +345,14 @@ var servoRng = servoMax-servoMin;
     for(var i=0;i<stlparts.length;i++)loadMeshSTL('./design/'+stlparts[i]+'.stl',stlparts[i]);
     var botBuilt = false;
     function buildBot(){
-
+        
+/*
         var mesh = new THREE.Mesh(geometry,material);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         body.add(mesh);
+*/
+
         for (var i = 0; i < nseg; i++)
             seg(((pi2 / nseg) * i) + (pi2 / 8), 8);
 
