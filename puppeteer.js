@@ -1,21 +1,25 @@
 function start() {
-    var connection = new WebSocket('ws://' + location.host ,['soap', 'xmpp']);
-    // When the connection is open, send some data to the server
-    var connected = true;
-    connection.onopen = function() {
-        //connection.send('Ping');
-        // Send the message 'Ping' to the server
-        connected = true;
+    var connected = false;
+    try{
+        var connection = new WebSocket('ws://' + location.host ,['soap', 'xmpp']);
+         connection.onopen = function() {
+            //connection.send('Ping');
+            // Send the message 'Ping' to the server
+            connected = true;
+        }
+
+        // Log errors
+        connection.onerror = function(error) {
+            console.log('WebSocket Error ' + error);
+        }
+
+        // Log messages from the server
+        connection.onmessage = function(e) {
+            console.log('Server: ' + e.data);
+        }
     }
-    
-    // Log errors
-    connection.onerror = function(error) {
-        console.log('WebSocket Error ' + error);
-    }
-    
-    // Log messages from the server
-    connection.onmessage = function(e) {
-        console.log('Server: ' + e.data);
+    catch(err){
+        console.log("Robot socket not available!")
     }
 
     function send(obj){
@@ -196,7 +200,7 @@ function start() {
         if(bgClicked){
             camYaw.rotation.y+=evt.movementX*0.001;
             camPitch.rotation.x+=evt.movementY*0.001;
-        }else if(selectedBone!=undefined){
+        }else if(selectedBone!=undefined && buttons==1){
            
             selectedBone.value += evt.movementX*0.001;
             selectedBone.value = selectedBone.value<-1?-1:selectedBone.value>1?1:selectedBone.value;
