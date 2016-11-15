@@ -8,5 +8,6 @@ del *.stl
 "C:\Program Files\OpenSCAD\openscad.exe" -D"npart=50" -o sensorClamp.stl roboparts.scad
 "C:\Program Files\OpenSCAD\openscad.exe" -D"npart=60" -o servoCage.stl roboparts.scad
 "C:\Program Files\OpenSCAD\openscad.exe" -D"npart=65" -o quadStrut.stl roboparts.scad
+"C:\Program Files\OpenSCAD\openscad.exe" -D"npart=100" -o rack.stl roboparts.scad
 REM "C:\Program Files\OpenSCAD\openscad.exe" -D"npart=40" -o base.stl roboparts.scad
 REM "C:\Program Files\OpenSCAD\openscad.exe" -D"npart=30" -o baseClamp.stl roboparts.scad

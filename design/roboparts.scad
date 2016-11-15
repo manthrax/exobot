@@ -34,7 +34,7 @@ servoTabThickness = 2.58;
 
 // Main geometry
 
-npart = 80;//17;//80;//70;//17;//15;
+npart = 100;//17;//80;//70;//17;//15;
 partsOnly = false ;
 
 nside = 4;  //Number of legs 6 = hexapod
@@ -86,9 +86,48 @@ module doPart(part){
         #servoHorn();
     //   translate([0,0,14.5]) cube([6,6,6]);
     //barProxy();
-        translate([-32,0,-1]) rotate([0,90,0]) sensorMount();
+        translate([-32,0,-1]) rotate([0,90,0])  sensorMount();
+    }
+    
+    if(part == 100){
+        rack();
     }
 }
+
+
+rackBeamWidth = 23;
+
+module rack1(){
+    translate([0,0,-43]) rotate([180,0,0]) connectorSlot();
+    translate([0,0,43]) connectorSlot();
+    translate([-16,0,0]) cube([2,4,82],center = true);
+    translate([-5,0,40]) cube([23,4,2],center = true);
+    translate([-5,0,-40]) cube([23,4,2],center = true);
+}
+
+module rackPinHoles(){
+    translate([-16,26,26])rotate([0,90,0])cylinder(15,1,1,center = true);
+    translate([-16,-26,26])rotate([0,90,0])cylinder(15,1,1,center = true);
+    translate([-16,26,-26])rotate([0,90,0])cylinder(15,1,1,center = true);
+    translate([-16,-26,-26])rotate([0,90,0])cylinder(15,1,1,center = true);
+
+}
+
+module rack(){
+    rack1();
+    rotate([90,0,0])rack1();
+    translate([-13,0,0])rotate([0,-90,0])connector();
+    
+    translate([0,0,10])difference(){
+    translate([-16,0,0]) difference(){
+        cube([2,56,56],center = true);
+        
+        cube([4,49,49],center = true);
+     }
+     rackPinHoles();
+    }
+}
+
 /*
 for(i=[0:10:100]){
 translate([0,0,-6*i]) doPart(i);
@@ -177,7 +216,7 @@ module calfSleeve(){
 module cableGuide(){
         //Cable guide
     connOff = (servoBodyWidth/2)+wallThickness;
-    translate([-1,-connOff-3,-4]) rotate([180,90,0]){
+    translate([-1,-connOff-2.9,-4]) rotate([180,90,0]){
         translate([8,-1.5,6])cylinder(14,1,1,center = true);
         translate([0,-2.5,6]) cube([1,4,14],center = true);
         translate([4,-1,6]) cube([8,1,14],center = true);
@@ -189,7 +228,7 @@ module calfSleeveWithConnectors(){
     calfSleeve();
     
     connOff = (servoBodyWidth/2)+wallThickness;
-    translate([-7,connOff+0.5,2]) rotate([90,0,0]) connector();
+    translate([-7,connOff+0.4,2]) rotate([90,0,0]) connector();
     translate([-7,-connOff,2]) rotate([90,-90,0]) connectorSlot();
     
     cableGuide();
