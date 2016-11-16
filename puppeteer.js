@@ -146,10 +146,13 @@ function Puppeteer() {
             fn(selectedMesh)
         }
     }
+    var specularBoost = 0.1;
+    var specularScale = 3;
     var ud = picklet.create('uiDiv', 64, function(str, col) {
         forEachSelectedMesh(function(msh) {
-            msh.material = msh.material.clone();
+            //msh.material = msh.material.clone();
             msh.material.color.setRGB(col[0], col[1], col[2]);
+            msh.material.specular.setRGB((col[0]+specularBoost)*specularScale, (col[1]+specularBoost)*specularScale, (col[2]+specularBoost)*specularScale);
         });
     }, [1, 1, 1]);
     var jointsByMeshId = {};
@@ -175,11 +178,13 @@ function Puppeteer() {
         var joint = new THREE.Object3D();
         var joint1 = new THREE.Object3D();
         var shoulder = new THREE.Object3D();
+        /*
         var material = new THREE.MeshPhongMaterial({
             color: 0xffffff,
             specular: 0x111111,
-            shininess: 20
-        });
+            shininess: 100
+        });*/
+
         var deg180 = Math.PI;
         var deg90 = Math.PI * 0.5;
         var geometry = new THREE.BoxGeometry(1,1,2);
@@ -240,13 +245,17 @@ function Puppeteer() {
     //light0.castShadow = 
     light.lookAt(scene);
     light.castShadow = true;
-    //   var light0 = new THREE.AmbientLight(0x606060);
-    //   light0.position.set(-9, 7, 9);
-    //    scene.add(light0);
+    
+       var light0 = new THREE.AmbientLight(0x808080);
+       scene.add(light0);
+
+    /*
     var light0 = new THREE.DirectionalLight(0xffffff);
     light0.position.set(-9, 7, 9);
     scene.add(light0);
     light0.lookAt(scene);
+*/
+
     //    light0.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 50, 1, 1200, 2500 ) );
     //    light0.shadow.bias = 0.0001;
     light.shadow.mapSize.width = SHADOW_MAP_WIDTH;
@@ -317,28 +326,28 @@ function Puppeteer() {
             return;
         buttons |= 1 << event.button;
         if (hilightedMesh) {
-            //} && (hilightedMesh.bone!=undefined)) {
             if (hilightedMesh != selectedMesh) {
                 if (selectedMesh) {
                     selectGhost.parent.remove(selectGhost);
-                    selectGhost = undefined;
+                    selectedMesh = selectGhost = undefined;
                 }
                 selectedMesh = hilightedMesh;
+
                 selectGhost = selectedMesh.clone();
                 selectGhost.material = selectMaterial;
-                selectGhost.scale.multiplyScalar(1.05);
+                selectGhost.scale.multiplyScalar(1.0);
                 selectedMesh.parent.add(selectGhost);
+
                 selectedBone = jointsByMeshId[selectedMesh.id];
                 if (selectedBone) {
                     this.angleSlider.value = (selectedBone.value + 1) * 50;
                 }
-            } else {
-                if (selectedMesh) {
-                    selectGhost.remove();
-                    selectedMesh = selectGhost = undefined;
-                }
             }
         } else {
+            if (selectedMesh) {
+                selectGhost.parent.remove(selectGhost);
+                selectedMesh = selectGhost = undefined;
+            }
             if (buttons != 0)
                 bgClicked = true;
         }
@@ -351,7 +360,6 @@ function Puppeteer() {
         send({
             stop: true
         });
-        hilightedMesh = undefined;
         event.preventDefault();
         return false;
     }
@@ -375,7 +383,7 @@ function Puppeteer() {
     var groundMat = new THREE.MeshPhongMaterial({
         color: 0xffffff,
         specular: 0x111111,
-        shininess: 350,
+        shininess: 50,
         map: texLoader.load("woodfloor.jpg")
     });
     groundMat.map.repeat.set(2, 2);
@@ -393,7 +401,7 @@ function Puppeteer() {
         var material = new THREE.MeshPhongMaterial({
             color: 0xff5533,
             specular: 0x111111,
-            shininess: 1000
+            shininess: 150
         });
         var mesh = new THREE.Mesh(geometry,material);
         //mesh.position.set( 0, - 0.25, 0.6 );
@@ -453,14 +461,14 @@ function Puppeteer() {
         var intersects = raycaster.intersectObjects(boneMeshes, true);
         if (intersects.length > 0) {
             if (hilightedMesh != intersects[0].object) {
-                hilightedMesh = undefined;
+
                 if (hilightGhost) {
                     hilightGhost.parent.remove(hilightGhost);
                     hilightGhost = undefined;
                 }
                 hilightedMesh = intersects[0].object
                 hilightGhost = hilightedMesh.clone();
-                hilightGhost.scale.multiplyScalar(1.1);
+                hilightGhost.scale.multiplyScalar(1.0);
                 hilightGhost.material = hilightMaterial;
                 hilightedMesh.parent.add(hilightGhost);
             }
