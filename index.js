@@ -14,11 +14,31 @@ catch(err){
 // Configure min and max servo pulse lengths
 var servoMin = 150  // Min pulse length out of 4096
 var servoMax = 600  // Max pulse length out of 4096
-
 var servoMid = ((servoMin+servoMax)/2)|0
 var servoRng = servoMax-servoMin;
-
+var correctionFactor;//=1.118;
 var pwm = makePwm({"freq": 60});//, "correctionFactor": 1.118});
+
+function parseConfig(cfg){
+	if(cfg.servoMin){
+		servoMin = cfg.servoMin|0;
+	}
+	if(cfg.servoMax){
+		servoMax = cfg.servoMax|0;
+	}
+	servoMid = ((servoMin+servoMax)/2)|0
+	servoRng = servoMax-servoMin;
+	if(cfg.freq||cfg.correctionFactor){
+		if(pwm)
+			pwm.stop();
+		pwm = makePwm({"freq": cfg.freq?cfg.freq:60, "correctionFactor":cfg.correctionFactor?cfg.correctionFactor:0});
+
+	}
+}
+
+parseConfig({servoMin:150,servoMax:600,freq:60,correctionFactor:undefined});
+
+
 //var pwm = makePwm({"freq": 160, "correctionFactor": 1.118});
 
 //	pwm.setPwm(ch, 0, v); 
@@ -91,10 +111,16 @@ wss.on("connection", function(ws) {
 			//console.log("Got message from:",ws.playerId," : ",msg)
 			//data.obj = ws.playerId;	//slam playerID
 			//GameServer.processEvent(data,ws);
-			if(data.c!=undefined && data.v!=undefined){
-				var sval = data.v|0;
-				console.log("c:"+data.c+" v:"+sval);
-				pwm.setPwm(data.c, 0, sval);
+			if(data.config!=undefined){
+				parseConfig(data.config);
+			}
+			if(data.bones!=undefined){
+				for(var i=0;i<data.bones.length;i++){
+					var bone = data.bones[i];
+					var sval = bone.v|0;
+					console.log("c:"+bone.c+" v:"+sval);
+					pwm.setPwm(bone.c, 0, sval);
+				}
 			}
 			if(data.stop){
 				pwm.stop();

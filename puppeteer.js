@@ -305,8 +305,10 @@ function Puppeteer() {
         if (npwm != bone.pwm) {
             bone.pwm = npwm;
             send({
-                c: i,
-                v: bone.pwm
+                bones:[{
+                    c: i,
+                    v: bone.pwm
+                }]
             });
         }
     }
