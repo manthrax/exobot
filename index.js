@@ -11,30 +11,17 @@ catch(err){
 	makePwm=function(){return {stop:function(){},setPwm:function(){}}}
 }
 
-// Configure min and max servo pulse lengths
-var servoMin = 150  // Min pulse length out of 4096
-var servoMax = 600  // Max pulse length out of 4096
-
-var servoMid = ((servoMin+servoMax)/2)|0
-var servoRng = servoMax-servoMin;
 var correctionFactor;//=1.118;
 var pwm = makePwm({"freq": 60});//, "correctionFactor": 1.118});
 
 function parseConfig(cfg){
-	if(cfg.servoMin){
-		servoMin = cfg.servoMin|0;
-	}
-	if(cfg.servoMax){
-		servoMax = cfg.servoMax|0;
-	}
-	servoMid = ((servoMin+servoMax)/2)|0
-	servoRng = servoMax-servoMin;
+	console.log(cfg)
 	if(cfg.freq||cfg.correctionFactor){
 		if(pwm)
 			pwm.stop();
 		pwm = makePwm({"freq": cfg.freq?cfg.freq:60, "correctionFactor":cfg.correctionFactor?cfg.correctionFactor:0});
-
 	}
+	console.log("Parsed config.");
 }
 
 parseConfig({servoMin:200,servoMax:700,freq:60,correctionFactor:undefined});

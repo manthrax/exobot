@@ -1,1 +1,4 @@
-node index.js
+while true
+do
+	node index.js
+done

@@ -125,9 +125,9 @@ function Puppeteer() {
     var boneMeshes = [];
 
     // Configure min and max servo pulse lengths
-    var servoMin = 150
+    var servoMin = 200
     // Min pulse length out of 4096
-    var servoMax = 600
+    var servoMax = 650
     // Max pulse length out of 4096
     var servoMid = ((servoMin + servoMax) / 2) | 0
     var servoRng = servoMax - servoMin;
