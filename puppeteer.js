@@ -263,6 +263,35 @@ function start() {
     var smworld = new SMWorld(puppeteer.world);
     /*-----------------------------*/
 }
+
+Puppeteer.prototype.importModel = function(model){
+    this.timelinePanel.pane.model = model;
+    this.timelinePanel.render();
+}
+
+Puppeteer.prototype.exportModel = function(){
+    this.userDownload("botmodel.json",JSON.stringify(this.timelinePanel.pane.model));
+}
+
+Puppeteer.prototype.userDownload = function(filename, text) {
+    var element = document.createElement('a');
+    if (typeof text == 'string') {
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    } else if (typeof text == 'object') {
+        //var b64encoded = Uint8ToString(text);
+        var url = window.URL.createObjectURL(new Blob([text],{
+            type: 'application/octet-stream'
+        }));
+        element.setAttribute('href', url);
+        //'data:binary;base64,' + b64encoded);
+    }
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
+;
 function AppPanel(id) {
     this.pane = new Pane(id);
     this.panels.push(this.pane);
@@ -437,7 +466,7 @@ Timeline.prototype.render = function() {
     var cctx = this.cctx;
     canv.width = 2000;
     canv.height = 256;
-    cctx.fillStyle = 'rgba(255,0,0,0.75)';
+    cctx.fillStyle = 'rgba(128,128,128,0.75)';
     cctx.fillRect(0, 0, canv.width, canv.height);
     var model = this.pane.model;
     if (model.channels) {

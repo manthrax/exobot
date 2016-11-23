@@ -120,7 +120,13 @@ wss.on("connection", function(ws) {
 					//Cause the server to restart....
 					console.log("Restarting server....");
 					process.exit(0);
-				},1000);
+				},100);
+			if(data.killServer)
+				setTimeout(function(){
+					//Cause the server to restart....
+					console.log("Killing server....");
+					process.exit(-1);
+				},100);
 		}
 		catch(e){
 			console.log("Got malformed data from client:",ws.playerId,JSON.stringify(msg));

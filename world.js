@@ -1,5 +1,5 @@
-function World(){
-        var SHADOW_MAP_WIDTH = 2048
+function World() {
+    var SHADOW_MAP_WIDTH = 2048
       , SHADOW_MAP_HEIGHT = 2048;
     var renderer = new THREE.WebGLRenderer({
         canvas: canv,
@@ -17,22 +17,22 @@ function World(){
     0.1,// Near
     10000 // Far
     );
-
-
     var hilightedMesh;
     var selectedMesh;
     var bgClicked;
     var buttons = 0;
-    this.getSelectedMesh = function(){
+    this.getSelectedMesh = function() {
         return selectedMesh;
     }
-
     window.stopButton.onclick = function(e) {
         puppeteer.send({
             stop: true
         });
     }
-    window.resetButton.onclick = function(e) {
+    window.exportButton.onclick = function(e) {
+        puppeteer.exportModel();
+    }
+    window.restartButton.onclick = function(e) {
         puppeteer.send({
             restartServer: true
         });
@@ -40,10 +40,42 @@ function World(){
             location.reload();
         }, 5000);
     }
-
+    window.killButton.onclick = function(e) {
+        puppeteer.send({
+            killServer: true
+        });
+        setTimeout(function() {
+            location.reload();
+        }, 5000);
+    }
+    function loadFileObjAsText(fileobj, loadedcb) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
+            var data = event.target.result;
+            loadedcb(fileobj, data);
+        }
+        reader.readAsText(fileobj);
+    }
+    function handleFileSelect(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        var files = evt.dataTransfer.files;
+        for (var i = 0, f; (f = files[i]) ; i++) {
+            loadFileObjAsText(f, function(fileobj, txt) {
+                puppeteer.importModel(JSON.parse(txt));
+            })
+        }
+    }
+    function handleDragOver(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        evt.dataTransfer.dropEffect = 'link';
+        // Explicitly show this is a copy.
+    }
+    document.addEventListener('dragover', handleDragOver, false);
+    document.addEventListener('drop', handleFileSelect, false);
     var prefs;
-
-    this.getPrefs = function () {
+    this.getPrefs = function() {
         if (prefs)
             return prefs;
         prefs = {}
@@ -61,10 +93,6 @@ function World(){
         return prefs;
     }
     this.getPrefs();
-
-
-
-
     var camYaw = this.camYaw = new THREE.Object3D();
     var camPitch = this.camPitch = new THREE.Object3D();
     camPitch.rotation.x = prefs.camera.pitch ? prefs.camera.pitch : pi2 * 0.85;
@@ -73,18 +101,13 @@ function World(){
     scene.add(camYaw);
     camYaw.add(camPitch);
     camPitch.add(camera);
-
-
     function showStatus(str) {
         console.log(str);
         statusText.innerHTML = str;
     }
-
     var ud = picklet.create('uiDiv', 64, function(str, col) {
-         puppeteer.colorSelected(str,col);
+        puppeteer.colorSelected(str, col);
     }, [1, 1, 1]);
-
-
     var light = new THREE.SpotLight(0xFFFFFF);
     //var light = new THREE.DirectionalLight(0xffffff);
     light.position.set(0, 20, 0);
@@ -118,7 +141,6 @@ function World(){
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     }
     window.addEventListener('mousemove', onMouseMove, false);
-
     var loader = new THREE.STLLoader();
     var activeMeshLoads = 0;
     var loadsFinished = false;
@@ -136,7 +158,7 @@ function World(){
         meshDB[id] = mesh;
         activeMeshLoads--;
     }
-    this.loadMeshSTL = function (path, id) {
+    this.loadMeshSTL = function(path, id) {
         activeMeshLoads++;
         loader.load(path, function(_id) {
             var id = _id;
@@ -145,7 +167,6 @@ function World(){
             }
         }(id));
     }
-
     var hilightedMesh;
     var selectedMesh;
     var hilightMaterial = new THREE.MeshBasicMaterial({
@@ -169,13 +190,9 @@ function World(){
     var hiMaterial = new THREE.MeshPhongMaterial({
         color: 0xFF0000
     });
-
-
-
     function mwheel(evt) {
         camera.position.z += evt.wheelDelta * -0.01;
     }
-
     function mdown(event) {
         if (event.target != canv)
             return;
@@ -213,21 +230,15 @@ function World(){
         event.preventDefault();
         return false;
     }
-
     function mmove(evt) {
         if (bgClicked) {
             camYaw.rotation.y += evt.movementX * 0.01;
             camPitch.rotation.x += evt.movementY * 0.01;
-        } else puppeteer.meshMoved(evt,buttons);
-
+        } else
+            puppeteer.meshMoved(evt, buttons);
     }
-
-    
-
-
     var pickables = this.pickables = [];
     var meshDB = this.meshDB = {};
-
     function saveState() {
         prefs.colors = {};
         scene.traverse(function(mesh) {
@@ -239,13 +250,11 @@ function World(){
         prefs.camera.yaw = camYaw.rotation.y;
         prefs.camera.pitch = camPitch.rotation.x;
         prefs.camera.zoom = camera.position.z;
-
         puppeteer.saveState(prefs);
         localStorage.exobot = JSON.stringify(prefs);
         return null ;
     }
     this.saveState = saveState;
-
     function render() {
         if (!loadsFinished && activeMeshLoads == 0) {
             loadsFinished = true;
@@ -288,9 +297,9 @@ function World(){
         //body.rotation.y += 0.001;
     }
     requestAnimationFrame(render);
-
     window.onbeforeunload = function(e) {
         saveState();
-        return;// "Haaaalps!"
+        return;
+        // "Haaaalps!"
     }
 }

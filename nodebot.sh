@@ -1,3 +1,4 @@
+set -e
 while true
 do
 	cd ~/bot/exobot/
