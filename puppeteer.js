@@ -378,7 +378,7 @@ Timeline.prototype.removeKeysAtFrame = function(cf) {
     model.keymap[cf] = [];
 }
 function compareKeyTime(a, b) {
-    return (a.t < b.t) ? -1 : (a.t < b.t) ? 1 : 0;
+    return (a.t < b.t) ? -1 : (a.t > b.t) ? 1 : 0;
 }
 Timeline.prototype.rebuildChannelIndex = function() {
     var model = this.pane.model;
