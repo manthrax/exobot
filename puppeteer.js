@@ -52,7 +52,7 @@ function Puppeteer() {
             var bval = selectedBone.value + (selectedBone.axis == 'y' ? evt.movementX : evt.movementY) * 0.01;
             forEachSelectedMesh(function(mesh) {
                 if ((mesh.bone !== undefined) && (bones[mesh.bone].axis == selectedBone.axis)) {
-                    setBone(mesh.bone, bval);
+                    this.setBone(mesh.bone, bval);
                 }
             });
         }
@@ -163,7 +163,7 @@ function Puppeteer() {
     }
     // window.addEventListener('beforeunload',saveState);
     // window.addEventListener('beforeunload',function(e){return 'AAAAA!!!'});
-    function setBone(i, bval) {
+    this.setBone = function(i, bval) {
         var bone = bones[i];
         bone.value = bval;
         bone.value = bone.value < -1 ? -1 : bone.value > 1 ? 1 : bone.value;
@@ -198,14 +198,13 @@ function Puppeteer() {
             send(pkt);
         }
     }
-    this.setBone = setBone;
     function angleChanged(evt) {
         if (selectedBone) {
             var bval = ((angleSlider.value | 0) / 50) - 1;
             var ang = selectedBone.value * jointRangeRadians;
             forEachSelectedMesh(function(mesh) {
                 if ((mesh.bone !== undefined) && (bones[mesh.bone].axis == selectedBone.axis)) {
-                    setBone(mesh.bone, bval);
+                    this.setBone(mesh.bone, bval);
                 }
             })
         }
@@ -250,7 +249,7 @@ function Puppeteer() {
             seg(((pi2 / nseg) * i) + (pi2 / 8), 8);
         for (var i = 0; i < bones.length; i++) {
             if (prefs.bones[i])
-                setBone(i, prefs.bones[i].value)
+                this.setBone(i, prefs.bones[i].value)
         }
         angleSlider.oninput = angleChanged;
     }
