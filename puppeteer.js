@@ -266,6 +266,7 @@ function start() {
 
 Puppeteer.prototype.importModel = function(model){
     this.timelinePanel.pane.model = model;
+    this.timelinePanel.pane.state.model = model;
     this.timelinePanel.render();
 }
 

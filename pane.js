@@ -138,5 +138,9 @@ Pane.prototype.saveState = function() {
         }
         if(pane.model)pane.state.model = pane.model;
     }
+    for (var i in Pane.prototype.state.panes) {
+        var st = Pane.prototype.state.panes[i];
+
+    }
     localStorage.editorState = JSON.stringify(Pane.prototype.state);
 }
