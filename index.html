@@ -3,8 +3,26 @@
 <script type='text/javascript' src='three.js'></script>
 <script type='text/javascript' src='STLLoader.js'></script>
 <script type='text/javascript' src='picklet.js'></script>
+<script type='text/javascript' src='pane.js'></script>
+<script type='text/javascript' src='vec3.js'></script>
+<script type='text/javascript' src='World.js'></script>
+<script type='text/javascript' src='SpringMass.js'></script>
 <script type='text/javascript' src='puppeteer.js'></script>
+<style>
 
+    div {
+        background: white;
+        z-index: 10;
+        position: absolute;
+        top: 70px;
+        left: 10px;
+        border: 1px solid black
+    }
+    textarea{
+        overflow: auto;
+        resize: auto;
+    }
+</style>
 <body style='background:#000000; margin:0px;' onload='start();'>
 
 <div id='uiDiv' style='position: absolute; top: 5px; left: 5px; z-index: 20; background:rgba(255,255,255,0.5);'>

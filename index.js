@@ -103,12 +103,14 @@ wss.on("connection", function(ws) {
 				parseConfig(data.config);
 			}
 			if(data.bones!=undefined){
+				var sstr ="";
 				for(var i=0;i<data.bones.length;i++){
 					var bone = data.bones[i];
 					var sval = bone.v|0;
-					console.log("c:"+bone.c+" v:"+sval);
+					sstr+="c:"+bone.c+" v:"+sval;
 					pwm.setPwm(bone.c, 0, sval);
 				}
+				console.log(sstr);
 			}
 			if(data.stop){
 				pwm.stop();

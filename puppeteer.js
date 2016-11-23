@@ -1,43 +1,7 @@
-
 function Puppeteer() {
+    var world = this.world = new World();
+    var prefs = world.getPrefs();
     var connected = false;
-    var hilightedMesh;
-    var selectedMesh;
-    var hilightMaterial = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(1,1,1,0.5),
-        transparent: true,
-        opacity: 0.5
-    });
-    var selectMaterial = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(1,1,1,0.25),
-        transparent: true,
-        opacity: 0.5
-    });
-    var selectGhost;
-    var hilightGhost;
-    var prefs;
-    function getPrefs() {
-        if (prefs)
-            return prefs;
-        prefs = {}
-        try {
-            prefs = JSON.parse(localStorage.exobot);
-        } catch (err) {
-            prefs = {};
-        }
-        if (!prefs.camera)
-            prefs.camera = {};
-        if (!prefs.colors)
-            prefs.colors = {};
-        if (!prefs.bones)
-            prefs.bones = {};
-        return prefs;
-    }
-    getPrefs();
-    function showStatus(str) {
-        console.log(str);
-        statusText.innerHTML = str;
-    }
     try {
         var connection = new WebSocket('ws://' + location.host,['soap', 'xmpp']);
         connection.onopen = function() {
@@ -57,7 +21,7 @@ function Puppeteer() {
     } catch (err) {
         showStatus("Robot socket not available!")
     }
-    function send(obj) {
+    var send = this.send = function(obj) {
         if (connected) {
             try {
                 connection.send(JSON.stringify(obj));
@@ -67,63 +31,13 @@ function Puppeteer() {
             }
         }
     }
-    window.stopButton.onclick = function(e) {
-        send({
-            stop: true
-        });
-    }
-    window.resetButton.onclick = function(e) {
-        send({
-            restartServer: true
-        });
-        setTimeout(function() {
-            location.reload();
-        }, 5000);
-    }
-    var SHADOW_MAP_WIDTH = 2048
-      , SHADOW_MAP_HEIGHT = 2048;
-    var renderer = new THREE.WebGLRenderer({
-        canvas: canv,
-        //shadowMapEnabled: true
-    });
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.soft = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap;
-    var raycaster = new THREE.Raycaster();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    var scene = new THREE.Scene();
-    var nseg = 4;
-    var pi2 = Math.PI * 2;
-    var camera = new THREE.PerspectiveCamera(35,// Field of view
-    window.innerWidth / window.innerHeight,// Aspect ratio
-    0.1,// Near
-    10000 // Far
-    );
     var geometry = new THREE.CylinderGeometry(2.5,2.5,0.5,nseg);
     //BoxGeometry( 5, 5, 5 );
-    var material = new THREE.MeshPhongMaterial({
-        color: 0xFFFFFF
-    });
-    var selMaterial = new THREE.MeshPhongMaterial({
-        color: 0xFFFF00
-    });
-    var hiMaterial = new THREE.MeshPhongMaterial({
-        color: 0xFF0000
-    });
     var body = new THREE.Object3D();
-    var camYaw = new THREE.Object3D();
-    var camPitch = new THREE.Object3D();
-    camPitch.rotation.x = prefs.camera.pitch ? prefs.camera.pitch : pi2 * 0.85;
-    camYaw.rotation.y = prefs.camera.yaw ? prefs.camera.yaw : pi2 * 0.85;
-    camera.position.set(0, 0, prefs.camera.zoom ? prefs.camera.zoom : 32);
-    body.add(camYaw);
-    camYaw.add(camPitch);
-    camPitch.add(camera);
     //body.rotation.x = Math.PI;
-    scene.add(body);
-    var bones = [];
-    var boneMeshes = [];
-
+    world.scene.add(body);
+    var bones = this.bones = [];
+    var boneMeshes = world.pickables;
     // Configure min and max servo pulse lengths
     var servoMin = 200
     // Min pulse length out of 4096
@@ -132,11 +46,17 @@ function Puppeteer() {
     var servoMid = ((servoMin + servoMax) / 2) | 0
     var servoRng = servoMax - servoMin;
     var jointRangeRadians = Math.PI * 0.5;
-    var hilightedMesh;
-    var selectedMesh;
     var selectedBone;
-    var bgClicked;
-    var buttons = 0;
+    this.meshMoved = function(evt, buttons) {
+        if (selectedBone != undefined && buttons == 1) {
+            var bval = selectedBone.value + (selectedBone.axis == 'y' ? evt.movementX : evt.movementY) * 0.01;
+            forEachSelectedMesh(function(mesh) {
+                if ((mesh.bone !== undefined) && (bones[mesh.bone].axis == selectedBone.axis)) {
+                    setBone(mesh.bone, bval);
+                }
+            });
+        }
+    }
     function forEachSelectedMesh(fn) {
         if (allCheckbox.checked) {
             for (var i = 0; i < boneMeshes.length; i++) {
@@ -148,16 +68,15 @@ function Puppeteer() {
     }
     var specularBoost = 0.1;
     var specularScale = 3;
-    var ud = picklet.create('uiDiv', 64, function(str, col) {
+    this.colorSelected = function(str, col) {
         forEachSelectedMesh(function(msh) {
             //msh.material = msh.material.clone();
             msh.material.color.setRGB(col[0], col[1], col[2]);
-            msh.material.specular.setRGB((col[0]+specularBoost)*specularScale, (col[1]+specularBoost)*specularScale, (col[2]+specularBoost)*specularScale);
+            msh.material.specular.setRGB((col[0] + specularBoost) * specularScale, (col[1] + specularBoost) * specularScale, (col[2] + specularBoost) * specularScale);
         });
-    }, [1, 1, 1]);
+    }
     var jointsByMeshId = {};
-    var meshDB = {};
-
+    var meshDB = world.meshDB;
     function makeMesh(name, x, y, z, rx, ry, rz, s) {
         var mesh = meshDB[name].clone();
         mesh.position.set(x ? x : 0, y ? y : 0, z ? z : 0)
@@ -184,7 +103,6 @@ function Puppeteer() {
             specular: 0x111111,
             shininess: 100
         });*/
-
         var deg180 = Math.PI;
         var deg90 = Math.PI * 0.5;
         var geometry = new THREE.BoxGeometry(1,1,2);
@@ -235,64 +153,16 @@ function Puppeteer() {
         bones.push(joint)
         //			shoulder.add( new THREE.BoxHelper( mesh ) );
     }
-    var light = new THREE.SpotLight(0xFFFFFF);
-    //var light = new THREE.DirectionalLight(0xffffff);
-    light.position.set(0, 20, 0);
-    light.penumbra = 0.5;
-    light.decay = 0.1;
-    scene.add(light);
-    //light0.lookAt(scene);
-    //light0.castShadow = 
-    light.lookAt(scene);
-    light.castShadow = true;
-    
-       var light0 = new THREE.AmbientLight(0x808080);
-       scene.add(light0);
-
-    /*
-    var light0 = new THREE.DirectionalLight(0xffffff);
-    light0.position.set(-9, 7, 9);
-    scene.add(light0);
-    light0.lookAt(scene);
-*/
-
-    //    light0.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 50, 1, 1200, 2500 ) );
-    //    light0.shadow.bias = 0.0001;
-    light.shadow.mapSize.width = SHADOW_MAP_WIDTH;
-    light.shadow.mapSize.height = SHADOW_MAP_HEIGHT;
-    //scene.add(new THREE.CameraHelper( light.shadow.camera ))
-    renderer.setClearColor(0x303030, 1);
-    //0x8d8ddd
-    var mouse = new THREE.Vector2();
-    function onMouseMove(event) {
-        // calculate mouse position in normalized device coordinates
-        // (-1 to +1) for both components
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    }
-    window.addEventListener('mousemove', onMouseMove, false);
-    function saveState() {
-        
-        prefs.colors = {};
-        scene.traverse(function(mesh) {
-            if (mesh.userData.material) {
-                var col = mesh.material.color;
-                prefs.colors[mesh.id] = [col.r, col.g, col.b];
-            }
-        })
-        prefs.camera.yaw = camYaw.rotation.y;
-        prefs.camera.pitch = camPitch.rotation.x;
-        prefs.camera.zoom = camera.position.z;
+    this.saveState = function(prefs) {
         for (var i = 0; i < bones.length; i++) {
-            prefs.bones[i]={value:bones[i].value};
+            prefs.bones[i] = {
+                value: bones[i].value
+            };
         }
-        localStorage.exobot = JSON.stringify(prefs);
-        return null ;
+        Pane.prototype.saveState();
     }
-    this.saveState = saveState;
-   // window.addEventListener('beforeunload',saveState);
-   // window.addEventListener('beforeunload',function(e){return 'AAAAA!!!'});
-
+    // window.addEventListener('beforeunload',saveState);
+    // window.addEventListener('beforeunload',function(e){return 'AAAAA!!!'});
     function setBone(i, bval) {
         var bone = bones[i];
         bone.value = bval;
@@ -303,15 +173,32 @@ function Puppeteer() {
         if (bone.pwm == undefined)
             bone.pwm = npwm;
         if (npwm != bone.pwm) {
+            bone.dirty = true;
+            this.bonesDirty = true;
             bone.pwm = npwm;
-            send({
-                bones:[{
-                    c: i,
-                    v: bone.pwm
-                }]
-            });
         }
     }
+    this.tick = function() {
+        if (!this.bonesDirty)
+            return;
+        this.bonesDirty = false;
+        var pkt = {
+            bones: []
+        };
+        for (var ct = this.bones.length, i = 0; i < ct; i++) {
+            var bone = this.bones[i];
+            if (bone.dirty) {
+                pkt.bones.push({
+                    c: i,
+                    v: bone.pwm
+                })
+            }
+        }
+        if (pkt.bones.length) {
+            send(pkt);
+        }
+    }
+    this.setBone = setBone;
     function angleChanged(evt) {
         if (selectedBone) {
             var bval = ((angleSlider.value | 0) / 50) - 1;
@@ -323,63 +210,13 @@ function Puppeteer() {
             })
         }
     }
-    function mdown(event) {
-        if (event.target != canv)
-            return;
-        buttons |= 1 << event.button;
-        if (hilightedMesh) {
-            if (hilightedMesh != selectedMesh) {
-                if (selectedMesh) {
-                    selectGhost.parent.remove(selectGhost);
-                    selectedMesh = selectGhost = undefined;
-                }
-                selectedMesh = hilightedMesh;
-
-                selectGhost = selectedMesh.clone();
-                selectGhost.material = selectMaterial;
-                selectGhost.scale.multiplyScalar(1.0);
-                selectedMesh.parent.add(selectGhost);
-
-                selectedBone = jointsByMeshId[selectedMesh.id];
-                if (selectedBone) {
-                    this.angleSlider.value = (selectedBone.value + 1) * 50;
-                }
-            }
-        } else {
-            if (selectedMesh) {
-                selectGhost.parent.remove(selectGhost);
-                selectedMesh = selectGhost = undefined;
-            }
-            if (buttons != 0)
-                bgClicked = true;
+    var selectedMesh;
+    this.doSelectMesh = function(newlySelectedMesh) {
+        selectedMesh = newlySelectedMesh;
+        selectedBone = jointsByMeshId[selectedMesh.id];
+        if (selectedBone) {
+            angleSlider.value = (selectedBone.value + 1) * 50;
         }
-    }
-    function mup(event) {
-        if (event.target != canv)
-            return;
-        buttons &= ~(1 << event.button);
-        bgClicked = false;
-        send({
-            stop: true
-        });
-        event.preventDefault();
-        return false;
-    }
-    function mmove(evt) {
-        if (bgClicked) {
-            camYaw.rotation.y += evt.movementX * 0.01;
-            camPitch.rotation.x += evt.movementY * 0.01;
-        } else if (selectedBone != undefined && buttons == 1) {
-            var bval = selectedBone.value + (selectedBone.axis == 'y' ? evt.movementX : evt.movementY) * 0.01;
-            forEachSelectedMesh(function(mesh) {
-                if ((mesh.bone !== undefined) && (bones[mesh.bone].axis == selectedBone.axis)) {
-                    setBone(mesh.bone, bval);
-                }
-            });
-        }
-    }
-    function mwheel(evt) {
-        camera.position.z += evt.wheelDelta * -0.01;
     }
     var texLoader = new THREE.TextureLoader();
     var groundMat = new THREE.MeshPhongMaterial({
@@ -396,39 +233,13 @@ function Puppeteer() {
     ground.position.y -= 4;
     ground.castShadow = false;
     ground.receiveShadow = true;
-    scene.add(ground);
-    var loader = new THREE.STLLoader();
-    var activeMeshLoads = 0;
-    function meshLoaded(geometry, id) {
-        var material = new THREE.MeshPhongMaterial({
-            color: 0xff5533,
-            specular: 0x111111,
-            shininess: 150
-        });
-        var mesh = new THREE.Mesh(geometry,material);
-        //mesh.position.set( 0, - 0.25, 0.6 );
-        //mesh.rotation.set( 0, - Math.PI / 2, 0 );
-        mesh.scale.set(0.1, 0.1, 0.1);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        //scene.add( mesh );
-        meshDB[id] = mesh;
-        activeMeshLoads--;
-    }
-    function loadMeshSTL(path, id) {
-        activeMeshLoads++;
-        loader.load(path, function(_id) {
-            var id = _id;
-            return function(geometry) {
-                meshLoaded(geometry, id)
-            }
-        }(id));
-    }
+    world.scene.add(ground);
     var stlparts = ["foot", "quadStrut", "servoArm", "servoSleeveWithMultiConnectors", "rack"];
     for (var i = 0; i < stlparts.length; i++)
-        loadMeshSTL('./design/' + stlparts[i] + '.stl', stlparts[i]);
-    var botBuilt = false;
-    function buildBot() {
+        world.loadMeshSTL('./design/' + stlparts[i] + '.stl', stlparts[i]);
+    var nseg = 4;
+    var pi2 = Math.PI * 2;
+    this.buildBot = function() {
         /*
         var mesh = new THREE.Mesh(geometry,material);
         mesh.castShadow = true;
@@ -442,55 +253,260 @@ function Puppeteer() {
                 setBone(i, prefs.bones[i].value)
         }
         angleSlider.oninput = angleChanged;
-        window.addEventListener('mousedown', mdown, false);
-        window.addEventListener('mouseup', mup, false);
-        window.addEventListener('mouseout', mup, false);
-        window.addEventListener('mousemove', mmove, false);
-        window.addEventListener('mousewheel', mwheel, false);
-        botBuilt = true;
     }
-    function render() {
-        if (!botBuilt && activeMeshLoads == 0) {
-            buildBot();
+    this.actionPanel = new ActionPanel();
+    this.posePanel = new PosePanel();
+    this.timelinePanel = new Timeline();
+}
+function start() {
+    var puppeteer = window.puppeteer = new Puppeteer();
+    /*----------------------------------*/
+    var smworld = new SMWorld(puppeteer.world);
+    /*-----------------------------*/
+}
+function AppPanel(id) {
+    this.pane = new Pane(id);
+    this.panels.push(this.pane);
+}
+AppPanel.prototype.panels = [];
+function Timeline() {
+    AppPanel.call(this, 'Timeline');
+    var canv = this.canv = document.createElement('canvas');
+    var cctx = this.cctx = canv.getContext('2d');
+    this.render();
+    this.pane.div.insertBefore(canv, this.pane.textarea);
+    this.pane.div.insertBefore(document.createElement('br'), this.pane.textarea);
+    this.pane.textarea.remove();
+    canv.onmousedown = function(tl) {
+        return function(evt) {
+            timelineMouseEvent.call(tl, evt);
         }
-        requestAnimationFrame(render);
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        // update the picking ray with the camera and mouse position	
-        raycaster.setFromCamera(mouse, camera);
-        // calculate objects intersecting the picking ray
-        var intersects = raycaster.intersectObjects(boneMeshes, true);
-        if (intersects.length > 0) {
-            if (hilightedMesh != intersects[0].object) {
-
-                if (hilightGhost) {
-                    hilightGhost.parent.remove(hilightGhost);
-                    hilightGhost = undefined;
+    }(this);
+    canv.onmousemove = function(tl) {
+        return function(evt) {
+            timelineMouseEvent.call(tl, evt);
+        }
+    }(this);
+    canv.onmousemup = function(tl) {
+        return function(evt) {
+            timelineMouseEvent.call(tl, evt);
+        }
+    }(this);
+    window.onkeydown = function(tl) {
+        return function(evt) {
+            timelineKeyEvent.call(tl, evt);
+        }
+    }(this);
+    //canv.style.opacity = '0.5';
+    //canv.style.resize = 'both';
+    //canv.style.overflow = 'auto';
+    this.pane.div.style.overflow = 'hidden';
+    //    canv.height = 256;
+    //   canv.style['overflow-x']='scroll';
+    this.pane.div.style.resize = 'both';
+    //this.pane.div.style.overflow='auto';
+    //this.statePane.textarea.appendChild(canv);
+    this.cctx = cctx;
+}
+Timeline.prototype = Object.create(AppPanel.prototype);
+Timeline.prototype.panelToFrameTime = function(px) {
+    return px;
+}
+Timeline.prototype.frameTimeToPanel = function(ft) {
+    return ft;
+}
+Timeline.prototype.flush = function() {
+    var model = this.pane.model;
+    model.keymap = {};
+    model.keys = [];
+    model.channels = {};
+    model.frameData = {};
+}
+Timeline.prototype.evaluateChannelAtFrame = function(chanid, frame) {
+    var model = this.pane.model;
+    var chan = this.pane.model.channels[chanid];
+    for (var i = 0; i < chan.length; i++) {
+        var ka = chan[i];
+        if (ka.t >= frame)
+            return;
+        if (i + 1 < chan.length) {
+            var kb = chan[i + 1];
+            if (kb.t >= frame) {
+                var lerp = (frame - ka.t) / (kb.t - ka.t);
+                return (kb.v * lerp) + (ka.v * (1 - lerp));
+            }
+        }
+    }
+}
+Timeline.prototype.evaluateAnimationAtFrame = function(frame) {
+    var fdata = {};
+    var model = this.pane.model;
+    for (var c in this.pane.model.channels) {
+        fdata[c] = this.evaluateChannelAtFrame(c, frame);
+    }
+    for (var c in fdata) {
+        var val = fdata[c];
+        if (val !== undefined)
+            puppeteer.setBone(c, val);
+    }
+    return fdata;
+}
+function timelineMouseEvent(evt) {
+    if (evt.buttons) {
+        this.pane.model.currentFrame = this.panelToFrameTime(evt.offsetX);
+        this.pane.model.frameData = this.evaluateAnimationAtFrame(this.pane.model.currentFrame);
+        this.render();
+    }
+}
+Timeline.prototype.chanHeight = 32;
+Timeline.prototype.removeNearbyKeys = function() {
+    var model = this.pane.model;
+    for (var i = model.currentFrame - 10; i < model.currentFrame + 10; i++) {
+        this.removeKeysAtFrame(i);
+    }
+    this.rebuildChannelIndex();
+    this.render();
+}
+Timeline.prototype.removeKeysAtFrame = function(cf) {
+    var model = this.pane.model;
+    var fkeys = model.keymap[cf];
+    if (fkeys) {
+        for (var i = 0; i < fkeys.length; i++) {
+            model.keys.splice(model.keys.indexOf(fkeys[i]), 1);
+            //Remove frame keys..
+        }
+    }
+    model.keymap[cf] = [];
+}
+function compareKeyTime(a, b) {
+    return (a.t < b.t) ? -1 : (a.t < b.t) ? 1 : 0;
+}
+Timeline.prototype.rebuildChannelIndex = function() {
+    var model = this.pane.model;
+    var chans = model.channels = {};
+    for (var k in model.keymap) {
+        var keys = model.keymap[k];
+        for (i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            if (!chans[key.c])
+                chans[key.c] = [];
+            chans[key.c].push(key);
+        }
+    }
+    for (var c in model.channels) {
+        var chan = model.channels[c];
+        chan.sort(compareKeyTime);
+    }
+    model.frameData = this.evaluateAnimationAtFrame(model.currentFrame);
+}
+Timeline.prototype.insertKey = function() {
+    //Key
+    var model = this.pane.model;
+    if (!model.keymap)
+        model.keymap = {}
+    var cf = model.currentFrame | 0;
+    this.removeKeysAtFrame(cf);
+    var ka = model.keymap[cf] = [];
+    for (var i = 0; i < puppeteer.bones.length; i++) {
+        var bon = puppeteer.bones[i];
+        var key = {
+            t: cf,
+            c: i,
+            v: bon.value
+        };
+        model.keys.push(key);
+        ka.push(key);
+    }
+    this.rebuildChannelIndex();
+    this.render();
+}
+function timelineKeyEvent(evt) {
+    if (evt.key == 'ArrowRight') {
+        this.pane.model.currentFrame++;
+        this.render();
+    } else if (evt.key == 'ArrowLeft') {
+        this.pane.model.currentFrame--;
+        this.render();
+    } else if (evt.key == 'i') {
+        this.insertKey();
+    } else if (evt.key == 'Delete') {
+        this.removeNearbyKeys();
+    }
+}
+Timeline.prototype.render = function() {
+    var canv = this.canv;
+    var cctx = this.cctx;
+    canv.width = 2000;
+    canv.height = 256;
+    cctx.fillStyle = 'rgba(255,0,0,0.75)';
+    cctx.fillRect(0, 0, canv.width, canv.height);
+    var model = this.pane.model;
+    if (model.channels) {
+        var chns = model.channels;
+        cctx.beginPath();
+        for (var ck in chns) {
+            var chn = chns[ck];
+            if (chn.length > 1) {
+                var ci = chn[0].c;
+                var cy = (ci * this.chanHeight) + (this.chanHeight * 0.5);
+                for (var i = 0; i < chn.length - 1; i++) {
+                    cctx.moveTo(this.frameTimeToPanel(chn[i].t), cy + ((this.chanHeight * 0.5) * chn[i].v));
+                    cctx.lineTo(this.frameTimeToPanel(chn[i + 1].t), cy + ((this.chanHeight * 0.5) * chn[i + 1].v));
                 }
-                hilightedMesh = intersects[0].object
-                hilightGhost = hilightedMesh.clone();
-                hilightGhost.scale.multiplyScalar(1.0);
-                hilightGhost.material = hilightMaterial;
-                hilightedMesh.parent.add(hilightGhost);
-            }
-        } else {
-            hilightedMesh = undefined;
-            if (hilightGhost) {
-                hilightGhost.parent.remove(hilightGhost);
-                hilightGhost = undefined;
             }
         }
-        renderer.render(scene, camera);
-        //body.rotation.y += 0.001;
+        cctx.stroke();
     }
-    requestAnimationFrame(render);
+    if (model.keys) {
+        var keys = model.keys;
+        cctx.fillStyle = 'Black';
+        for (var l = keys.length, i = 0; i < l; i++) {
+            var k = keys[i];
+            var px = k.t;
+            var py = (k.c * this.chanHeight) + (this.chanHeight * 0.5) + ((this.chanHeight * 0.5) * k.v);
+            cctx.strokeRect(px - 4, py - 4, 8, 8);
+        }
+    }
+    cctx.strokeStyle = 'Black';
+    cctx.beginPath();
+    cctx.setLineDash([1, 4]);
+    for (var left = 0, dleft = 0; dleft < canv.width; left += 60) {
+        dleft = this.frameTimeToPanel(left);
+        cctx.moveTo(dleft, 0);
+        cctx.lineTo(dleft, canv.height);
+    }
+    for (var top = 0, dtop = 0; dtop < canv.height; top += 1) {
+        dtop = top * this.chanHeight;
+        cctx.moveTo(0, dtop);
+        cctx.lineTo(canv.width, dtop);
+    }
+    cctx.closePath()
+    cctx.stroke();
+    if (model.currentFrame) {
+        var px = this.frameTimeToPanel(model.currentFrame);
+        cctx.beginPath();
+        cctx.moveTo(px, 0);
+        cctx.lineTo(px, canv.height);
+        cctx.stroke();
+        if (model.frameData) {
+            cctx.beginPath();
+            //  cctx.setLineDash([]);
+            for (var c in model.frameData) {
+                var val = model.frameData[c];
+                var py = (c * this.chanHeight) + (this.chanHeight * 0.5);
+                py += this.chanHeight * 0.5 * val;
+                cctx.arc(px, py, 4, 0, 2 * Math.PI);
+            }
+            cctx.closePath()
+            cctx.fill();
+        }
+    }
 }
-
-window.onbeforeunload = function(e){
-    if(window.puppeteer)window.puppeteer.saveState();
-    return "Haaaalps!"
+function PosePanel() {
+    AppPanel.call(this, 'Poses');
 }
-function start(){
-    window.puppeteer = new Puppeteer();
+PosePanel.prototype = Object.create(AppPanel.prototype);
+function ActionPanel() {
+    AppPanel.call(this, 'Actions');
 }
+ActionPanel.prototype = Object.create(AppPanel.prototype);
