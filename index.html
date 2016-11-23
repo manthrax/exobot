@@ -1,51 +1,56 @@
 <!DOCTYPE html>
 <html>
-<script type='text/javascript' src='three.js'></script>
-<script type='text/javascript' src='STLLoader.js'></script>
-<script type='text/javascript' src='picklet.js'></script>
-<script type='text/javascript' src='pane.js'></script>
-<script type='text/javascript' src='vec3.js'></script>
-<script type='text/javascript' src='world.js'></script>
-<script type='text/javascript' src='SpringMass.js'></script>
-<script type='text/javascript' src='puppeteer.js'></script>
-<style>
+    <script type='text/javascript' src='three.js'></script>
+    <script type='text/javascript' src='STLLoader.js'></script>
+    <script type='text/javascript' src='picklet.js'></script>
+    <script type='text/javascript' src='pane.js'></script>
+    <script type='text/javascript' src='vec3.js'></script>
+    <script type='text/javascript' src='world.js'></script>
+    <script type='text/javascript' src='SpringMass.js'></script>
+    <script type='text/javascript' src='puppeteer.js'></script>
+    <style>
+        body{
+            overflow: hidden;
+        }
+        div {
+            position: absolute;
+        }
+        .app-div {
+            overflow: hidden;
+            scroll: none;
+        }
+        .pane-div {
+            z-index: 10;
+            background: white;
+            top: 70px;
+            left: 10px;
+            border: 1px solid black
+        }
 
-    div {
-        background: white;
-        z-index: 10;
-        position: absolute;
-        top: 70px;
-        left: 10px;
-        border: 1px solid black
-    }
-    textarea{
-        overflow: auto;
-        resize: auto;
-    }
-</style>
-<body style='background:#000000; margin:0px;' onload='start();'>
-
-<div id='uiDiv' style='position: absolute; top: 5px; left: 5px; z-index: 20; background:rgba(255,255,255,0.5);'>
-
-<input type="range" name="Angle" id="angleSlider" value="50" min="0" max="100" steps='100' list="steplist">
-<datalist id="steplist">
-    <option>0</option>
-    <option>25</option>
-    <option>50</option>
-    <option>75</option>
-    <option>100</option>
-</datalist>
-</input>
-
-<input type='checkbox' id='allCheckbox'>all</input>
+        textarea {
+            overflow: auto;
+            resize: auto;
+        }
+    </style>
+    <body style='background:#000000; margin:0px;' onload='start();'>
+        <div id='app' class='app-div'>
+            <div id='uiDiv' style='position: absolute; top: 5px; left: 5px; z-index: 20; background:rgba(255,255,255,0.5);'>
+                <input type="range" name="Angle" id="angleSlider" value="50" min="0" max="100" steps='100' list="steplist">
+                <datalist id="steplist">
+                    <option>0</option>
+                    <option>25</option>
+                    <option>50</option>
+                    <option>75</option>
+                    <option>100</option>
+                </datalist>
+</input><input type='checkbox' id='allCheckbox'>all</input>
 <button type='button' id='stopButton'>stop</button>
 <button type='button' id='restartButton'>restart</button>
 <button type='button' id='killButton'>kill</button>
 <button type='button' id='exportButton'>export</button>
-<a id='statusLabel'>Status:</a><a id='statusText'>disconnected</a>
+<a id='statusLabel'>Status:</a>
+<a id='statusText'>disconnected</a>
 </div>
 <canvas style='display:block;width:100%; height:100%;' id='canv'>
-<canvas>
-
-</body>
-</html>
+    <canvas>
+</div></body></html>

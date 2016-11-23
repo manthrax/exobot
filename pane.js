@@ -1,5 +1,6 @@
 function Pane(id) {
     this.div = document.createElement('div');
+    this.div.class = 'pane-div';
     this.titleSpan = document.createElement('span');
     this.textarea = document.createElement('textarea');
     this.div.id = id;
