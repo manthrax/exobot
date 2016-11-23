@@ -52,7 +52,7 @@ function Puppeteer() {
             var bval = selectedBone.value + (selectedBone.axis == 'y' ? evt.movementX : evt.movementY) * 0.01;
             forEachSelectedMesh(function(mesh) {
                 if ((mesh.bone !== undefined) && (bones[mesh.bone].axis == selectedBone.axis)) {
-                    this.setBone(mesh.bone, bval);
+                    puppeteer.setBone(mesh.bone, bval);
                 }
             });
         }
