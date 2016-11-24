@@ -1,6 +1,6 @@
 function Puppeteer() {
-    var world = this.world = new World();
-    var prefs = world.getPrefs();
+    var app = this.app = new App();
+    var prefs = app.getPrefs();
     var connected = false;
     try {
         var connection = new WebSocket('ws://' + location.host,['soap', 'xmpp']);
@@ -35,9 +35,9 @@ function Puppeteer() {
     //BoxGeometry( 5, 5, 5 );
     var body = new THREE.Object3D();
     //body.rotation.x = Math.PI;
-    world.scene.add(body);
+    app.scene.add(body);
     var bones = this.bones = [];
-    var boneMeshes = world.pickables;
+    var boneMeshes = app.pickables;
     // Configure min and max servo pulse lengths
     var servoMin = 200
     // Min pulse length out of 4096
@@ -76,7 +76,7 @@ function Puppeteer() {
         });
     }
     var jointsByMeshId = {};
-    var meshDB = world.meshDB;
+    var meshDB = app.meshDB;
     function makeMesh(name, x, y, z, rx, ry, rz, s) {
         var mesh = meshDB[name].clone();
         mesh.position.set(x ? x : 0, y ? y : 0, z ? z : 0)
@@ -159,7 +159,7 @@ function Puppeteer() {
                 value: bones[i].value
             };
         }
-        Pane.prototype.saveState();
+        Pane.prototype.saveState(prefs);
     }
     // window.addEventListener('beforeunload',saveState);
     // window.addEventListener('beforeunload',function(e){return 'AAAAA!!!'});
@@ -232,10 +232,10 @@ function Puppeteer() {
     ground.position.y -= 4;
     ground.castShadow = false;
     ground.receiveShadow = true;
-    world.scene.add(ground);
+    app.scene.add(ground);
     var stlparts = ["foot", "quadStrut", "servoArm", "servoSleeveWithMultiConnectors", "rack"];
     for (var i = 0; i < stlparts.length; i++)
-        world.loadMeshSTL('./design/' + stlparts[i] + '.stl', stlparts[i]);
+        app.loadMeshSTL('./design/' + stlparts[i] + '.stl', stlparts[i]);
     var nseg = 4;
     var pi2 = Math.PI * 2;
     this.buildBot = function() {
@@ -256,11 +256,13 @@ function Puppeteer() {
     this.actionPanel = new ActionPanel();
     this.posePanel = new PosePanel();
     this.timelinePanel = new Timeline();
+
+
 }
 function start() {
     var puppeteer = window.puppeteer = new Puppeteer();
     /*----------------------------------*/
-    var smworld = new SMWorld(puppeteer.world);
+//    var smworld = new SMWorld(puppeteer.app);
     /*-----------------------------*/
 }
 
@@ -271,7 +273,8 @@ Puppeteer.prototype.importModel = function(model){
 }
 
 Puppeteer.prototype.exportModel = function(){
-    this.userDownload("botmodel.json",JSON.stringify(this.timelinePanel.pane.model));
+    //this.userDownload("botmodel.json",JSON.stringify(this.timelinePanel.pane.model));
+    this.userDownload("botstate.json",JSON.stringify(this.app.getState()));
 }
 
 Puppeteer.prototype.userDownload = function(filename, text) {
@@ -298,11 +301,19 @@ function AppPanel(id) {
     this.panels.push(this.pane);
 }
 AppPanel.prototype.panels = [];
+
+
+
+AppPanel.prototype.rebuildFromModel = function(){
+}
+
+
+
+
 function Timeline() {
     AppPanel.call(this, 'Timeline');
     var canv = this.canv = document.createElement('canvas');
     var cctx = this.cctx = canv.getContext('2d');
-    this.render();
     this.pane.div.insertBefore(canv, this.pane.textarea);
     this.pane.div.insertBefore(document.createElement('br'), this.pane.textarea);
     this.pane.textarea.remove();
@@ -336,8 +347,18 @@ function Timeline() {
     //this.pane.div.style.overflow='auto';
     //this.statePane.textarea.appendChild(canv);
     this.cctx = cctx;
+    this.pane.controller = this;
 }
 Timeline.prototype = Object.create(AppPanel.prototype);
+
+
+Timeline.prototype.rebuildFromModel = function(){
+    this.rebuildChannelIndex();
+    this.render();
+}
+
+
+
 Timeline.prototype.panelToFrameTime = function(px) {
     return px;
 }

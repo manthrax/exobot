@@ -1,4 +1,4 @@
-function World() {
+function App() {
     var SHADOW_MAP_WIDTH = 2048
       , SHADOW_MAP_HEIGHT = 2048;
     var renderer = new THREE.WebGLRenderer({
@@ -62,7 +62,8 @@ function World() {
         var files = evt.dataTransfer.files;
         for (var i = 0, f; (f = files[i]) ; i++) {
             loadFileObjAsText(f, function(fileobj, txt) {
-                puppeteer.importModel(JSON.parse(txt));
+                //puppeteer.importModel(JSON.parse(txt));
+                App.prototype.setPrefs(JSON.parse(txt));
             })
         }
     }
@@ -74,25 +75,7 @@ function World() {
     }
     document.addEventListener('dragover', handleDragOver, false);
     document.addEventListener('drop', handleFileSelect, false);
-    var prefs;
-    this.getPrefs = function() {
-        if (prefs)
-            return prefs;
-        prefs = {}
-        try {
-            prefs = JSON.parse(localStorage.exobot);
-        } catch (err) {
-            prefs = {};
-        }
-        if (!prefs.camera)
-            prefs.camera = {};
-        if (!prefs.colors)
-            prefs.colors = {};
-        if (!prefs.bones)
-            prefs.bones = {};
-        return prefs;
-    }
-    this.getPrefs();
+    var prefs = this.getPrefs();
     var camYaw = this.camYaw = new THREE.Object3D();
     var camPitch = this.camPitch = new THREE.Object3D();
     camPitch.rotation.x = prefs.camera.pitch ? prefs.camera.pitch : pi2 * 0.85;
@@ -239,7 +222,9 @@ function World() {
     }
     var pickables = this.pickables = [];
     var meshDB = this.meshDB = {};
-    function saveState() {
+
+    function getState(){
+        var prefs = App.prototype.getPrefs();
         prefs.colors = {};
         scene.traverse(function(mesh) {
             if (mesh.userData.material) {
@@ -251,7 +236,11 @@ function World() {
         prefs.camera.pitch = camPitch.rotation.x;
         prefs.camera.zoom = camera.position.z;
         puppeteer.saveState(prefs);
-        localStorage.exobot = JSON.stringify(prefs);
+        return prefs;
+    }
+    this.getState = getState;
+    function saveState() {
+        localStorage.exobot = JSON.stringify(getState());
         return null ;
     }
     this.saveState = saveState;
@@ -259,11 +248,16 @@ function World() {
         if (!loadsFinished && activeMeshLoads == 0) {
             loadsFinished = true;
             window.puppeteer.buildBot();
+            
+        Pane.syncAllStates();
+        
             window.addEventListener('mousedown', mdown, false);
             window.addEventListener('mouseup', mup, false);
             window.addEventListener('mouseout', mup, false);
             window.addEventListener('mousemove', mmove, false);
             window.addEventListener('mousewheel', mwheel, false);
+
+
         }
         requestAnimationFrame(render);
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -302,4 +296,27 @@ function World() {
         return;
         // "Haaaalps!"
     }
+}
+
+App.prototype.setPrefs = function(prefs) {
+    App.prefs = prefs;
+}
+
+App.prototype.getPrefs = function() {
+    if (App.prefs)
+        return App.prefs;
+    var prefs = App.prefs = {}
+
+    try {
+        App.prefs = prefs = JSON.parse(localStorage.exobot);
+    } catch (err) {
+        App.prefs = prefs = {};
+    }
+    if (!prefs.camera)
+        prefs.camera = {};
+    if (!prefs.colors)
+        prefs.colors = {};
+    if (!prefs.bones)
+        prefs.bones = {};
+    return prefs;
 }

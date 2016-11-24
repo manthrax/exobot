@@ -1,19 +1,13 @@
 function Pane(id) {
     this.div = document.createElement('div');
-    this.div.class = 'pane-div';
+    this.div.className = 'pane-div';
     this.titleSpan = document.createElement('span');
     this.textarea = document.createElement('textarea');
-    this.div.id = id;
-    this.state = Pane.prototype.state.panes[id];
-    this.model={};
-    if (!this.state) {
-        this.state = {};
-        Pane.prototype.state.panes[id] = this.state;
-    }
-    this.model = this.state.model?this.state.model:{};
-    this.state.model = this.model;
+    this.div.id = this.id = id;
+
     this.titleSpan.innerHTML = id;
     this.div.pane = this;
+
     window.onmousedown = Pane.prototype.onmousedownhandler;
     window.onmouseup = Pane.prototype.onmouseuphandler;
     window.onmouseout = Pane.prototype.onmouseouthandler;
@@ -21,6 +15,41 @@ function Pane(id) {
     this.textarea.onmousedown = Pane.prototype.onmousedownhandler;
     this.textarea.onkeyup = Pane.prototype.textareakeyuphandler;
     this.textarea.spellcheck = false;
+
+    window.onmousemove = Pane.prototype.onmousemovehandler;
+    this.div.appendChild(this.titleSpan);
+    this.div.appendChild(document.createElement('br'));
+    this.div.appendChild(this.textarea);
+    document.body.appendChild(this.div);
+    Pane.elements.push(this);
+}
+
+Pane.syncAllStates=function(){
+    var prefs = App.prototype.getPrefs();
+
+    for(var i=0;i<Pane.elements.length;i++){
+        var p = Pane.elements[i];
+        var pstate = prefs.appState.panes[p.id];
+        if(pstate){
+            Pane.state.panes[p.id]=pstate;
+        }
+        p.syncState(pstate);
+    }
+}
+
+Pane.prototype.rebuildFromModel=function(){
+}
+
+Pane.prototype.syncState=function(pstate){
+    this.state = pstate;//Pane.state.panes[this.id];
+    this.model={};
+    if (!this.state) {
+        this.state = {};
+        Pane.state.panes[this.id] = this.state;
+    }
+    this.model = this.state.model?this.state.model:{};
+    this.state.model = this.model;
+
     if (this.state.ox) {
         var st = this.state;
         this.div.style.left = st.ox + 'px';
@@ -28,13 +57,12 @@ function Pane(id) {
         this.textarea.style.width = st.width + 'px';
         this.textarea.style.height = st.height + 'px';
         this.textarea.value = st.text;
+    }else{
+        this.div.style.left = this.div.style.top = ''+64*(Pane.elements.length+1)+'px';
     }
-    window.onmousemove = Pane.prototype.onmousemovehandler;
-    this.div.appendChild(this.titleSpan);
-    this.div.appendChild(document.createElement('br'));
-    this.div.appendChild(this.textarea);
-    document.body.appendChild(this.div);
-    Pane.prototype.elements.push(this);
+    
+    if(this.controller)
+        this.controller.rebuildFromModel();
 }
 
 Pane.prototype.onmousemovehandler = function(evt) {
@@ -81,7 +109,7 @@ Pane.prototype.onmousedownhandler = function(evt) {
     }
     if(rootNode==null)return;
     if (rootNode.pane) {
-        var elems = Pane.prototype.elements;
+        var elems = Pane.elements;
         var depth = elems.indexOf(rootNode.pane);
         if (depth < elems.length - 1) {
             var swp = elems[elems.length - 1];
@@ -109,7 +137,7 @@ Pane.prototype.onmousedownhandler = function(evt) {
             rootNode.pane.inDragArea = true;
         }
     } else {
-        var elems = Pane.prototype.elements;
+        var elems = Pane.elements;
         for (var i = 0; i < elems.length; i++) {
             elems[i].div.style.background = 'rgba(255,255,255,0.1)';
             elems[i].textarea.style.background = 'rgba(255,255,255,0.1)';
@@ -118,17 +146,19 @@ Pane.prototype.onmousedownhandler = function(evt) {
     }
     this.mdown = true;
 }
-Pane.prototype.state = {
+Pane.state = {
     panes: {}
 };
-Pane.prototype.elements = [];
-if (localStorage.editorState) {
-    Pane.prototype.state = JSON.parse(localStorage.editorState);
+
+Pane.elements = [];
+var prefs = App.prototype.getPrefs();
+if (prefs.appState) {
+    Pane.state = prefs.appState;
 }
 
-Pane.prototype.saveState = function() {
-    for (var i = 0; i < Pane.prototype.elements.length; i++) {
-        var pane = Pane.prototype.elements[i];
+Pane.prototype.saveState = function(prefs) {
+    for (var i = 0; i < Pane.elements.length; i++) {
+        var pane = Pane.elements[i];
         var div = pane.div;
         pane.state={};
         if(pane.textarea){
@@ -139,9 +169,9 @@ Pane.prototype.saveState = function() {
         }
         if(pane.model)pane.state.model = pane.model;
     }
-    for (var i in Pane.prototype.state.panes) {
-        var st = Pane.prototype.state.panes[i];
+    for (var i in Pane.state.panes) {
+        var st = Pane.state.panes[i];
 
     }
-    localStorage.editorState = JSON.stringify(Pane.prototype.state);
+    prefs.appState = Pane.state;
 }
