@@ -48,6 +48,25 @@ function App() {
             location.reload();
         }, 5000);
     }
+    window.dumpButton.onclick = function(e) {
+        puppeteer.app.getJSON('bot-burn.json', function(err, data) {
+            if (err != null ) {
+                alert("Something went wrong: " + err);
+            } else {
+                console.log("Bot read.");
+                App.prototype.setPrefs(data);
+                Pane.syncAllStates();
+            }
+        })
+    }
+    window.burnButton.onclick = function(e) {
+        puppeteer.send({
+            burnToBot: {
+                path: "bot-burn.json",
+                data: JSON.stringify(puppeteer.app.getState())
+            }
+        });
+    }
     function loadFileObjAsText(fileobj, loadedcb) {
         var reader = new FileReader();
         reader.onload = function(event) {
@@ -142,6 +161,22 @@ function App() {
         meshDB[id] = mesh;
         activeMeshLoads--;
     }
+    this.getJSON = function(url, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("get", url, true);
+        xhr.responseType = "json";
+        xhr.onload = function() {
+            var status = xhr.status;
+            if (status == 200) {
+                callback(null , xhr.response);
+            } else {
+                callback(status);
+            }
+        }
+        ;
+        xhr.send();
+    }
+    ;
     this.loadMeshSTL = function(path, id) {
         activeMeshLoads++;
         loader.load(path, function(_id) {
@@ -223,8 +258,7 @@ function App() {
     }
     var pickables = this.pickables = [];
     var meshDB = this.meshDB = {};
-
-    function getState(){
+    function getState() {
         var prefs = App.prototype.getPrefs();
         prefs.colors = {};
         scene.traverse(function(mesh) {
@@ -249,16 +283,12 @@ function App() {
         if (!loadsFinished && activeMeshLoads == 0) {
             loadsFinished = true;
             window.puppeteer.buildBot();
-            
-        Pane.syncAllStates();
-        
+            Pane.syncAllStates();
             window.addEventListener('mousedown', mdown, false);
             window.addEventListener('mouseup', mup, false);
             window.addEventListener('mouseout', mup, false);
             window.addEventListener('mousemove', mmove, false);
             window.addEventListener('mousewheel', mwheel, false);
-
-
         }
         requestAnimationFrame(render);
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -298,16 +328,13 @@ function App() {
         // "Haaaalps!"
     }
 }
-
 App.prototype.setPrefs = function(prefs) {
     App.prefs = prefs;
 }
-
 App.prototype.getPrefs = function() {
     if (App.prefs)
         return App.prefs;
     var prefs = App.prefs = {}
-
     try {
         App.prefs = prefs = JSON.parse(localStorage.exobot);
     } catch (err) {

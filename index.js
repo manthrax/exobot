@@ -1,6 +1,7 @@
 var WebSocketServer = require("ws").Server
 var http = require("http")
 var express = require("express")
+var fs = require("fs");
 var app = express()
 var makePwm;
 try{
@@ -127,6 +128,13 @@ wss.on("connection", function(ws) {
 					console.log("Killing server....");
 					process.exit(-1);
 				},100);
+			if(data.burnToBot){
+				var stream = fs.createWriteStream(data.burnToBot.path);
+				stream.once('open', function(fd) {
+				  stream.write(data.burnToBot.data);
+				  stream.end();
+				});
+			}
 		}
 		catch(e){
 			console.log("Got malformed data from client:",ws.playerId,JSON.stringify(msg));
