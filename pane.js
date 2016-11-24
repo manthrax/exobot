@@ -24,6 +24,14 @@ function Pane(id) {
     Pane.elements.push(this);
 }
 
+Pane.animateAll=function(){
+    for(var i=0;i<Pane.elements.length;i++){
+        var p = Pane.elements[i];
+        if(p.controller)
+            p.controller.animate();
+    }
+}
+
 Pane.syncAllStates=function(){
     var prefs = App.prototype.getPrefs();
 
@@ -39,7 +47,6 @@ Pane.syncAllStates=function(){
 
 Pane.prototype.rebuildFromModel=function(){
 }
-
 Pane.prototype.syncState=function(pstate){
     this.state = pstate;//Pane.state.panes[this.id];
     this.model={};
