@@ -64,6 +64,7 @@ function App() {
             loadFileObjAsText(f, function(fileobj, txt) {
                 //puppeteer.importModel(JSON.parse(txt));
                 App.prototype.setPrefs(JSON.parse(txt));
+                Pane.syncAllStates();
             })
         }
     }
