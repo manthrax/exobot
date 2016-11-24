@@ -3,6 +3,42 @@ function Timeline() {
     ViewController.call(this, 'Timeline');
     var canv = this.canv = document.createElement('canvas');
     var cctx = this.cctx = canv.getContext('2d');
+
+    var rateButtons = document.createElement('span');
+    this.playbackRate = 1.0;
+    var rateValueSpan = document.createElement('span');
+    rateValueSpan.innerText="Rate:"+this.playbackRate;
+    this.pane.div.insertBefore(rateButtons,this.pane.titleSpan.nextSibling);
+    
+
+    var rateButtonHandler=function(timeline,buttons){
+        return function(evt){
+            if(evt.target.id == 'ratePlus'){
+                timeline.playbackRate+=0.25;
+            }else if(evt.target.id == 'rateMinus'){
+                timeline.playbackRate-=0.25;
+            }
+            var maxRate = 4;
+            if(timeline.playbackRate>maxRate)timeline.playbackRate=maxRate;
+            else if(timeline.playbackRate<-maxRate)timeline.playbackRate=-maxRate;
+            rateValueSpan.innerText="Rate:"+timeline.playbackRate;
+            console.log('test',timeline.playbackRate);
+        }
+    }(this,rateButtons);
+
+    var plusButton = document.createElement("button");
+    plusButton.id='ratePlus';
+    plusButton.innerText = "+";
+    plusButton.onclick = rateButtonHandler;
+    rateButtons.appendChild(plusButton);
+    var minusButton = document.createElement("button");
+    minusButton.id='rateMinus';
+    minusButton.innerText = "-";
+    minusButton.onclick = rateButtonHandler;
+    rateButtons.appendChild(minusButton);
+
+    rateButtons.appendChild(rateValueSpan);
+    
     this.pane.div.insertBefore(canv, this.pane.textarea);
     this.pane.div.insertBefore(document.createElement('br'), this.pane.textarea);
     this.pane.textarea.remove();
@@ -48,7 +84,7 @@ Timeline.prototype.rebuildFromModel = function(){
 
 Timeline.prototype.animate = function(){
     if(this.isPlaying){
-        this.pane.model.currentFrame++;
+        this.pane.model.currentFrame+=this.playbackRate;
         this.pane.model.frameData = this.evaluateAnimationAtFrame(this.pane.model.currentFrame);
         this.render();
     }
@@ -183,9 +219,14 @@ function timelineKeyEvent(evt) {
     }
 }
 Timeline.prototype.play = function(){
-    this.isPlaying = true;
-    this.playStartFrame = this.pane.model.currentFrame;
+    if(this.isPlaying){
+        this.pane.model.currentFrame = this.playStartFrame;
+    }else{
+        this.isPlaying = true;
+        this.playStartFrame = this.pane.model.currentFrame;
+    }
 }
+
 Timeline.prototype.stop = function(){
     if(this.isPlaying){
         this.pane.model.currentFrame = this.playStartFrame;
