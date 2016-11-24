@@ -11,14 +11,14 @@ function Timeline() {
     this.pane.div.insertBefore(rateButtons,this.pane.titleSpan.nextSibling);
     
 
-    var rateButtonHandler=function(timeline,buttons){
+    var rateButtonHandler = this.rateChangeHandler = function(timeline,buttons){
         return function(evt){
             if(evt.target.id == 'ratePlus'){
                 timeline.playbackRate+=0.25;
             }else if(evt.target.id == 'rateMinus'){
                 timeline.playbackRate-=0.25;
             }
-            var maxRate = 4;
+            var maxRate = 10;
             if(timeline.playbackRate>maxRate)timeline.playbackRate=maxRate;
             else if(timeline.playbackRate<-maxRate)timeline.playbackRate=-maxRate;
             rateValueSpan.innerText="Rate:"+timeline.playbackRate;
