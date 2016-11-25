@@ -213,8 +213,10 @@ function App() {
         camera.position.z += evt.wheelDelta * -0.01;
     }
     function mdown(event) {
-        if (event.target != canv)
-            return;
+        if (event.target != canv){
+            //event.preventDefault();
+            return;//s true;
+        }
         buttons |= 1 << event.button;
         if (hilightedMesh) {
             if (hilightedMesh != selectedMesh) {
@@ -284,6 +286,7 @@ function App() {
             loadsFinished = true;
             window.puppeteer.buildBot();
             Pane.syncAllStates();
+            document.body.oncontextmenu=function(evt){return false;};
             window.addEventListener('mousedown', mdown, false);
             window.addEventListener('mouseup', mup, false);
             window.addEventListener('mouseout', mup, false);

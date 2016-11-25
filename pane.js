@@ -2,6 +2,7 @@ function Pane(id) {
     this.div = document.createElement('div');
     this.div.className = 'pane-div';
     this.titleSpan = document.createElement('span');
+    this.titleSpan.className = 'title-span'
     this.textarea = document.createElement('textarea');
     this.div.id = this.id = id;
 
@@ -139,15 +140,18 @@ Pane.prototype.onmousedownhandler = function(evt) {
                 rootNode.pane.inResizeHandle = true;
             }
         }
-        if(evt.target==rootNode.pane.div||evt.target==rootNode.pane.titleSpane)
+        if((evt.target==rootNode.pane.div)||(evt.target==rootNode.pane.titleSpan))
         {
             rootNode.pane.inDragArea = true;
         }
     } else {
         var elems = Pane.elements;
         for (var i = 0; i < elems.length; i++) {
-            elems[i].div.style.background = 'rgba(255,255,255,0.1)';
-            elems[i].textarea.style.background = 'rgba(255,255,255,0.1)';
+            var e = elems[i];
+            e.div.style.background = 'rgba(255,255,255,0.1)';
+            e.textarea.style.background = 'rgba(255,255,255,0.1)';
+
+            
         }
         Pane.prototype.focus = evt.target;
     }
