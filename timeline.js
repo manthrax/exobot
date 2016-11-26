@@ -118,7 +118,9 @@ Timeline.prototype.evaluateChannelAtFrame = function(chanid, frame) {
             var kb = chan[i + 1];
             if (kb.t >= frame) {
                 var lerp = (frame - ka.t) / (kb.t - ka.t);
-                return (kb.v * lerp) + (ka.v * (1 - lerp));
+//                return (kb.v * lerp) + (ka.v * (1 - lerp));
+
+                return Timeline.cosineInterpolate(ka.v,kb.v, lerp);
             }
         }
     }
@@ -266,6 +268,16 @@ Timeline.prototype.stop = function() {
         this.isPlaying = false;
     }
 }
+
+
+                    
+Timeline.cosineInterpolate = function(y1,y2,mu)
+{
+   var mu2;
+   mu2 = (1-Math.cos(mu*Math.PI))/2;
+   return(y1*(1-mu2)+y2*mu2);
+}
+
 Timeline.prototype.render = function() {
     var canv = this.canv;
     var cctx = this.cctx;
@@ -286,8 +298,16 @@ Timeline.prototype.render = function() {
                 var ci = chn[0].c;
                 var cy = (ci * this.chanHeight) + (this.chanHeight * 0.5);
                 for (var i = 0; i < chn.length - 1; i++) {
+                  //  cctx.moveTo(this.frameTimeToPanel(chn[i].t), cy + ((this.chanHeight * 0.5) * chn[i].v));
+                  //  cctx.lineTo(this.frameTimeToPanel(chn[i + 1].t), cy + ((this.chanHeight * 0.5) * chn[i + 1].v));
+                    
+                    var ssteps = 16;
                     cctx.moveTo(this.frameTimeToPanel(chn[i].t), cy + ((this.chanHeight * 0.5) * chn[i].v));
-                    cctx.lineTo(this.frameTimeToPanel(chn[i + 1].t), cy + ((this.chanHeight * 0.5) * chn[i + 1].v));
+                    for(var ss=1;ss<ssteps;ss++){
+                        var dt = chn[i + 1].t-chn[i].t;
+                        var nv = Timeline.cosineInterpolate(chn[i].v,chn[i+1].v, ss/ssteps);                        
+                        cctx.lineTo(this.frameTimeToPanel(chn[i].t+(ss*dt/ssteps)), cy + ((this.chanHeight * 0.5) * nv));
+                    }
                 }
             }
         }
