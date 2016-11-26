@@ -35,7 +35,7 @@ Pane.animateAll=function(){
 
 Pane.syncAllStates=function(){
     var prefs = App.prototype.getPrefs();
-
+    if(!prefs.appState)prefs.appState={panes:{}};
     for(var i=0;i<Pane.elements.length;i++){
         var p = Pane.elements[i];
         var pstate = prefs.appState.panes[p.id];

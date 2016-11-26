@@ -178,7 +178,7 @@ function compareKeyTime(a, b) {
 Timeline.prototype.rebuildFrameIndex = function() {
     var model = this.pane.model;
     model.keymap = {};
-    var keys = model.keys;
+    var keys = model.keys?model.keys:[];
     model.keys = [];
     this.minTime = this.maxTime = 0;
     for (var i = 0; i < keys.length; i++) {

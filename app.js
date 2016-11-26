@@ -343,6 +343,8 @@ App.prototype.getPrefs = function() {
     } catch (err) {
         App.prefs = prefs = {};
     }
+//    App.prefs=prefs={};
+
     if (!prefs.camera)
         prefs.camera = {};
     if (!prefs.colors)
