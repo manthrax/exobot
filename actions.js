@@ -83,11 +83,14 @@ function actionPanelClick(actionPanel,action) {
             if(choice=='paste'){
                 var tpmodel = puppeteer.timelinePanel.pane.model;
                 var start = puppeteer.timelinePanel.playStartFrame|0;
+                var maxT = start;
                 for(var i=0;i<target.keys.length;i++){
                     var nk = copyKey(target.keys[i]);
                     nk.t+=start;
                     puppeteer.timelinePanel.insertKey(nk);
+                    if(maxT<nk.t)maxT=nk.t;
                 }
+                
                 puppeteer.timelinePanel.rebuildFromModel();
             }
         }

@@ -2,13 +2,17 @@ function Puppeteer() {
     var app = this.app = new App();
     var prefs = app.getPrefs();
     var connected = false;
+    function showStatus(stat){
+        statusText.innerHTML = stat;
+       
+    }
     try {
         var connection = new WebSocket('ws://' + location.host,['soap', 'xmpp']);
         connection.onopen = function() {
             //connection.send('Ping');
             // Send the message 'Ping' to the server
             connected = true;
-            statusText.innerHTML = 'Connected!';
+            showStatus('Connected!');
         }
         // Log errors
         connection.onerror = function(error) {
@@ -22,7 +26,7 @@ function Puppeteer() {
         showStatus("Robot socket not available!")
     }
     var send = this.send = function(obj) {
-        if (connected) {
+        if (connected && liveCheckbox.checked) {
             try {
                 connection.send(JSON.stringify(obj));
             } catch (err) {
@@ -206,7 +210,7 @@ function Puppeteer() {
             var ang = selectedBone.value * jointRangeRadians;
             forEachSelectedMesh(function(mesh) {
                 if ((mesh.bone !== undefined) && (bones[mesh.bone].axis == selectedBone.axis)) {
-                    this.setBone(mesh.bone, bval);
+                    puppeteer.setBone(mesh.bone, bval);
                 }
             })
         }

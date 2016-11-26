@@ -1,6 +1,7 @@
 function Timeline() {
     ViewController.call(this, 'Timeline');
     var canv = this.canv = document.createElement('canvas');
+    canv.className = 'timeline-canvas';
     var cctx = this.cctx = canv.getContext('2d');
     var rateButtons = document.createElement('span');
     this.playbackRate = 1.0;
@@ -60,10 +61,8 @@ function Timeline() {
     //canv.style.opacity = '0.5';
     //canv.style.resize = 'both';
     //canv.style.overflow = 'auto';
-    this.pane.div.style.overflow = 'hidden';
     //    canv.height = 256;
     //   canv.style['overflow-x']='scroll';
-    this.pane.div.style.resize = 'both';
     //this.pane.div.style.overflow='auto';
     //this.statePane.textarea.appendChild(canv);
     this.cctx = cctx;
@@ -76,15 +75,21 @@ Timeline.prototype.rebuildFromModel = function() {
 }
 Timeline.prototype.animate = function() {
     if (this.isPlaying) {
-        var dir = this.playEndFrame < this.playStartFrame ? -this.playbackRate : this.playbackRate;
-        var pf = this.pane.model.currentFrame += dir;
-        if (this.playEndFrame && (pf | 0) != this.playEndFrame) {
-            if (pf >= this.playEndFrame) {
-                pf = (pf - this.playEndFrame) % Math.abs(this.playEndFrame - this.playStartFrame);
-                pf += this.playEndFrame < this.playStartFrame ? this.playEndFrame : this.playStartFrame;
-                this.pane.model.currentFrame = pf;
-            }
+        var left = this.playStartFrame | 0;
+        var right = this.playEndFrame | 0;
+        var dir = 1;
+        if (left > right) {
+            var swp = left;
+            left = right;
+            right = swp;
+            dir = -1;
         }
+        var pf = this.pane.model.currentFrame += dir * this.playbackRate;
+        if(left!=right){
+            if(pf>right)pf=((pf-left) % (right-left))+left;
+            else if(pf<left)pf=right+((pf-left) % (right-left));
+        }
+        this.pane.model.currentFrame = pf;
         this.pane.model.frameData = this.evaluateAnimationAtFrame(this.pane.model.currentFrame);
         this.render();
     }
@@ -136,7 +141,7 @@ function timelineMouseEvent(evt) {
         if (evt.buttons == 1) {
             this.pane.model.currentFrame = this.panelToFrameTime(evt.offsetX);
             this.pane.model.frameData = this.evaluateAnimationAtFrame(this.pane.model.currentFrame);
-            if(evt.type=='mousedown')
+            if (evt.type == 'mousedown')
                 this.playStartFrame = this.pane.model.currentFrame;
         } else if (evt.buttons == 2) {
             this.playEndFrame = this.panelToFrameTime(evt.offsetX);
@@ -170,17 +175,20 @@ Timeline.prototype.removeKeysAtFrame = function(cf) {
 function compareKeyTime(a, b) {
     return (a.t < b.t) ? -1 : (a.t > b.t) ? 1 : 0;
 }
-
 Timeline.prototype.rebuildFrameIndex = function() {
     var model = this.pane.model;
-    model.keymap={};
+    model.keymap = {};
     var keys = model.keys;
-    model.keys=[];
-    for(var i=0;i<keys.length;i++){
+    model.keys = [];
+    this.minTime = this.maxTime = 0;
+    for (var i = 0; i < keys.length; i++) {
         this.insertKey(keys[i]);
+        if (keys[i].t < this.minTime)
+            this.minTime = keys[i].t;
+        if (keys[i].t > this.maxTime)
+            this.maxTime = keys[i].t;
     }
 }
-
 Timeline.prototype.rebuildChannelIndex = function() {
     var model = this.pane.model;
     var chans = model.channels = {};
@@ -199,19 +207,19 @@ Timeline.prototype.rebuildChannelIndex = function() {
     }
     model.frameData = this.evaluateAnimationAtFrame(model.currentFrame);
 }
-
-Timeline.prototype.insertKey = function(key){
+Timeline.prototype.insertKey = function(key) {
     var model = this.pane.model;
-    var ka = model.keymap[key.t|0];
-    if(!ka)ka = model.keymap[key.t|0] = [];
+    var ka = model.keymap[key.t | 0];
+    if (!ka)
+        ka = model.keymap[key.t | 0] = [];
     model.keys.push(key);
     ka.push(key);
 }
-
 Timeline.prototype.insertKeyFrame = function() {
     //Key
     var model = this.pane.model;
-    if (!model.keymap)model.keymap = {}
+    if (!model.keymap)
+        model.keymap = {}
     var cf = model.currentFrame | 0;
     this.removeKeysAtFrame(cf);
     var ka = model.keymap[cf] = [];
@@ -246,7 +254,7 @@ function timelineKeyEvent(evt) {
 }
 Timeline.prototype.play = function() {
     if (this.isPlaying) {
-        this.pane.model.currentFrame = this.playEndFrame<this.playStartFrame?this.playStartFrame:this.playEndFrame;
+        this.pane.model.currentFrame = this.playEndFrame < this.playStartFrame ? this.playStartFrame : this.playEndFrame;
     } else {
         this.isPlaying = true;
         this.playStartFrame = this.pane.model.currentFrame;
@@ -254,14 +262,17 @@ Timeline.prototype.play = function() {
 }
 Timeline.prototype.stop = function() {
     if (this.isPlaying) {
-        this.pane.model.currentFrame = this.playEndFrame<this.playStartFrame?this.playEndFrame:this.playStartFrame;
+        this.pane.model.currentFrame = this.playEndFrame < this.playStartFrame ? this.playEndFrame : this.playStartFrame;
         this.isPlaying = false;
     }
 }
 Timeline.prototype.render = function() {
     var canv = this.canv;
     var cctx = this.cctx;
-    canv.width = 2000;
+    var canvwidth = this.pane.div.clientWidth;
+    var timeWidth = this.frameTimeToPanel(this.maxTime | 0) + 100;
+    //canvwidth += 200;
+    canv.width = Math.max(canvwidth, timeWidth);
     canv.height = 256;
     cctx.fillStyle = 'rgba(128,128,128,0.75)';
     cctx.fillRect(0, 0, canv.width, canv.height);

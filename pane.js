@@ -64,7 +64,7 @@ Pane.prototype.syncState=function(pstate){
         this.div.style.top = st.oy + 'px';
         this.textarea.style.width = st.width + 'px';
         this.textarea.style.height = st.height + 'px';
-        this.textarea.value = st.text;
+        this.textarea.value = st.text?st.text:'<none>';
     }else{
         this.div.style.left = this.div.style.top = ''+64*(Pane.elements.length+1)+'px';
     }

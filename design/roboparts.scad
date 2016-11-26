@@ -34,7 +34,7 @@ servoTabThickness = 2.58;
 
 // Main geometry
 
-npart = 100;//17;//80;//70;//17;//15;
+npart = 80;//17;//80;//70;//17;//15;
 partsOnly = false ;
 
 nside = 4;  //Number of legs 6 = hexapod
@@ -467,7 +467,7 @@ module servoHorn(){
     translate([0,6,-19]){
         translate([0,0,-0.2]) hull(){
             translate([0,0,0]) rotate([0,0,22.5]) cylinder(3,3.5,3.5, center=true);
-            translate([0,14,0]) rotate([0,0,0]) cylinder(3,2,2, center=true);
+            translate([0,15,0]) rotate([0,0,0]) cylinder(3,2,2, center=true);
         }
         translate([0,0,3]) rotate([0,0,0]) scale(1.01) cylinder(3.5,3.5,3.5, center=true);
     }
@@ -491,7 +491,7 @@ module servoArm(){
         
     }
 //cube([10,10,30],center=true);
-    translate([0,0,-0.5]) axlePin();
+    translate([0,0,-1.0]) axlePin();
     translate([-24.1,0,2]) rotate([0,90,0]) connectorWithBase();
 }
 

@@ -108,7 +108,7 @@ function App() {
         console.log(str);
         statusText.innerHTML = str;
     }
-    var ud = picklet.create('uiDiv', 64, function(str, col) {
+    var ud = picklet.create('ui-div', 64, function(str, col) {
         puppeteer.colorSelected(str, col);
     }, [1, 1, 1]);
     var light = new THREE.SpotLight(0xFFFFFF);

@@ -20,6 +20,10 @@
             position: absolute;
             z-index: 0;
         }
+        .ui-div {
+            display: inline-block;
+            cursor:pointer;
+        }
         .app-div {
             overflow: hidden;
             scroll: none;
@@ -54,10 +58,14 @@
             cursor:pointer;
             display:block;
         }
+        .timeline-canvas{
+            overflow: hidden;
+            resize: both;
+        }
     </style>
     <body style='background:#000000; margin:0px;' onload='start();'>
 
-            <div id='uiDiv' style='position: absolute; top: 5px; left: 5px; z-index: 20; background:rgba(255,255,255,0.5);'>
+            <div id='ui-div' style='position: absolute; top: 5px; left: 5px; z-index: 20; background:rgba(255,255,255,0.5);'>
                 <input type="range" name="Angle" id="angleSlider" value="50" min="0" max="100" steps='100' list="steplist">
                 <datalist id="steplist">
                     <option>0</option>
@@ -67,6 +75,7 @@
                     <option>100</option>
                 </datalist>
 </input><input type='checkbox' id='allCheckbox'>all</input>
+</input><input type='checkbox' checked=true id='liveCheckbox'>live</input>
 <button type='button' id='stopButton'>stop</button>
 <button type='button' id='restartButton'>restart</button>
 <button type='button' id='killButton'>kill</button>
