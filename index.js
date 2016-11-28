@@ -63,7 +63,7 @@ if(args.length>3){
 }
 
 
-var port = process.env.PORT || (servePort?servePort:3002)
+var port = process.env.PORT || (servePort?servePort:80)
 //var webroot = __dirname;
 var webroot = __dirname + '/' + serveRoot;
 

@@ -114,12 +114,13 @@ function Puppeteer() {
         var foot = makeMesh("foot", 0.15, 0, 2.4, 0, 0, Math.PI * 0.5, 0.075);
         var arm0 = makeMesh("servoArm", 0.4, -0.45, -0.5, -deg90, -deg90, 0, 0.075);
         var arm1 = makeMesh("servoArm", -0.5, -0.3, -0.3, -deg90, 0, 0, 0.075);
-        var rack = makeMesh("rack", 0, 0, 0, 0, 0, -deg90, 0.075);
+        var rack = makeMesh("rackPi", 0, 0, 0, -deg90, 0, 0, 0.075);
         var mesh1 = makeMesh("servoSleeveWithMultiConnectors", 0, 0, 1.5, 0, 0, 0, 0.075);
         var strut = makeMesh("quadStrut", 0, 0, -4, deg90, 0, -deg90 * 0.5, 0.075)
         mesh1.bone = arm0.bone = bones.length;
         //mesh1.bone = bones.length+1;
         arm1.bone = foot.bone = bones.length + 1;
+        var rad2=rad+1;
         shoulder.position.x = Math.sin(ang) * rad * 0.5;
         shoulder.position.z = Math.cos(ang) * rad * 0.5;
         shoulder.rotation.y = ang;
@@ -141,7 +142,8 @@ function Puppeteer() {
         boneMeshes.push(strut)
         boneMeshes.push(rack)
         mesh.rotation.z = Math.PI * 0.5
-        joint.position.z += 1.0;
+        mesh.position.z += 0.9;
+        joint.position.z += 1.9;
         joint1.position.z += 2.8;
         var joint = jointsByMeshId[mesh1.id] = jointsByMeshId[arm0.id] = {
             axis: 'y',
@@ -239,7 +241,7 @@ function Puppeteer() {
     ground.castShadow = false;
     ground.receiveShadow = true;
     app.scene.add(ground);
-    var stlparts = ["foot", "quadStrut", "servoArm", "servoSleeveWithMultiConnectors", "rack"];
+    var stlparts = ["foot", "quadStrut", "servoArm", "servoSleeveWithMultiConnectors", "rackPi"];
     for (var i = 0; i < stlparts.length; i++)
         app.loadMeshSTL('./design/' + stlparts[i] + '.stl', stlparts[i]);
     var nseg = 4;
