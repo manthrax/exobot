@@ -11,7 +11,7 @@ $fa = 10;    // Don't generate larger angles than 5 degrees
 scaleFudge = 1.01;
 roundCubes = true;
 
-versionNo = "0.5";
+versionNo = "0.7";
 
 //servoTabLength = 5;
 
@@ -32,17 +32,35 @@ servoBodyHeight = 23;
 servoTabThickness = 2.58;
 
 
+
 // Main geometry
 
-npart = 80;//17;//80;//70;//17;//15;
-partsOnly = false ;
-
+//Render the part
+partsOnly = true ;
+legInset = 32;
 nside = 4;  //Number of legs 6 = hexapod
-
-baseRadius = 70;//54;
-
-chordLength =  2 * baseRadius * sin(360/nside);
 segAngle = 360/nside;
+
+baseRadius = 65;//54;
+
+hardwareZOffset = 5;
+
+br = baseRadius;
+sa = segAngle;
+
+//pp1 = [sin(0)*br,cos(0)*br,0];
+//pp2 = [sin(sa)*br,cos(sa)*br,0];
+
+
+function rvec(x,y,a) = [(sin(a)*x)+(cos(a)*y),(-cos(a)*x)+(sin(a)*y),0]; 
+
+bo =   14;
+pp1 = rvec(br,bo,0);
+pp2 = rvec(br,-bo,sa);
+
+chordRadius = norm((pp1+pp2)*0.5);
+chordLength =  norm(pp2-pp1);
+
 
 
 color0 = "Teal";//"LightGreen";
@@ -50,14 +68,11 @@ color1 = "LightBlue";
 color2 = "Red";
 color3 = "Orange";
 
+rackBeamWidth = 23;
 
 
-//Render the part
+npart = 130;//17;//80;//70;//17;//15;
 doPart(npart);
-//strut();
-//#servo();
-
-
 
 module doPart(part){
 
@@ -90,49 +105,210 @@ module doPart(part){
     }
     
     if(part == 100){
-        rack();
+        rotate([90,0,0])rackShelfClip();
     }
-}
-
-
-rackBeamWidth = 23;
-
-module rack1(){
-    translate([0,0,-43]) rotate([180,0,0]) connectorSlot();
-    translate([0,0,43]) connectorSlot();
-    translate([-16,0,0]) cube([2,4,82],center = true);
-    translate([-5,0,40]) cube([23,4,2],center = true);
-    translate([-5,0,-40]) cube([23,4,2],center = true);
-}
-
-module rackPinHoles(){
-    translate([-16,26,26])rotate([0,90,0])cylinder(15,1,1,center = true);
-    translate([-16,-26,26])rotate([0,90,0])cylinder(15,1,1,center = true);
-    translate([-16,26,-26])rotate([0,90,0])cylinder(15,1,1,center = true);
-    translate([-16,-26,-26])rotate([0,90,0])cylinder(15,1,1,center = true);
-
-}
-
-module rack(){
-    rack1();
-    rotate([90,0,0])rack1();
-    translate([-13,0,0])rotate([0,-90,0])connector();
+    if(part == 110){
+        rackRaspi();
+    }
+    if(part == 120){
+        rackBuck();
+    }
     
-    translate([0,0,10])difference(){
-    translate([-16,0,0]) difference(){
-        cube([2,56,56],center = true);
-        
-        cube([4,49,49],center = true);
-     }
-     rackPinHoles();
+    if(part == 125){
+        rotate([90,0,0]){
+          servoBoardSpacer();
+          translate([0,0,11.7]) boardHolePin();
+        }
+    }
+    if(part == 130){
+        rackVis();
     }
 }
 
-/*
-for(i=[0:10:100]){
-translate([0,0,-6*i]) doPart(i);
+
+
+///
+
+//Battery: 100x30x20
+//RASPI: 87x57x37
+//Buck converter 66x36x13
+
+
+module servoBoardSpacer(){
+    cylinder(10.5,2.5,2.5,center = true);
+    cylinder(20.5,1.25,1.25,center = true);
 }
-*/
+
+module boardHolePin(){
+    cylinder(2.5,2.5,2.5,center = true);
+    translate([0,0,3])cylinder(6,1.25,1.25,center = true);
+}
+
+
+module hcube(dim,center = false){
+    difference(){
+        cube(dim,center);
+        cube([dim.x-4,dim.y-4,dim.z+2],center);
+    }
+}
+
+module hardware(){
+    module buckConverter(){
+        #hcube([66,36,13],center = true);
+        translate([0,0,-5.0])color("Red") cube([59.5,28.5,2],center = true);
+    }
+        translate([0,0,-13]) #hcube([100,30,20],center = true);//battery
+        
+        translate([0,0,16]) #hcube([87,57,25],center = true);//pi
+        translate([12,0,4.5]) color("Red") cube([57.5,49,2],center = true);//pi57.5,49
+
+        translate([0, 18.5,39])  buckConverter();
+        translate([0,-18.5,39])  buckConverter();
+    
+}
+
+module rackShelfArm(){
+    r1 = chordRadius/2;
+    translate([r1-5,0,0])cube([chordRadius-6,5,2],center=true);
+    translate([chordRadius-9,0,1.5])cube([2,5,1],center=true);//Tongue
+}
+
+module rackShelfArms(){
+    for(i=[0:1:nside])
+    rotate([0,0,segAngle*i]){
+        rackShelfArm();
+    }    
+}
+
+
+module socket(slot = false){
+    if(slot){
+        connectorSlot();
+    }else{
+        rotate([180,0,0])connectorWithBase();
+    }
+}
+
+module rackShelfClip(){
+    r2 = chordRadius-7;
+    r1 = chordRadius-4;
+//    translate([0,0,-r1]) rotate([180,0,0]) connectorSlot();
+    
+    module slotMask(){
+       for(i=[-1:1:0]){
+            translate([0,0,(29*i)+16]){
+                cube([20,6,2.1],center = true);
+                translate([9,0,1.5])cube([2,6,1],center=true);//Tongue
+            }
+       }
+    }
+    
+    translate([r1,0,0]){
+        rotate([0,90,0]) socket(false);
+        translate([0,0,-hardwareZOffset]){
+            difference(){
+                translate([-5,0,1.5]) cube([6,5,35],center=true);
+                translate([-14,0,0]) slotMask();
+                translate([-8,0,1.5]) cube([8,6,23],center=true);
+            }
+           // translate([-14,0,0]) slotMask();
+        }
+    }
+}
+
+module rackPinBase(dx,dy){
+    dx2 = dx/2;
+    dy2 = dy/2;
+        module rackPin(){
+            //translate([0,0,-3.5]) cylinder(4,1.4,1.4,center = true);
+            translate([0,0,-0.8]) cylinder(3.5,2.5,2.5,center = true);
+        }
+    rotate([0,90,0]){
+        translate([0,dx2,dy2])rotate([0,90,0])rackPin();
+        translate([0,-dx2,dy2])rotate([0,90,0])rackPin();
+        translate([0,dx2,-dy2])rotate([0,90,0])rackPin();
+        translate([0,-dx2,-dy2])rotate([0,90,0])rackPin();
+    }
+}
+
+module rackPins(dx,dy){
+    dx2 = dx/2;
+    dy2 = dy/2;
+        module rackPin(){
+            translate([0,0,-1.5]) cylinder(8,1.4,1.4,center = true);
+        }
+    rotate([0,90,0]){
+        translate([0,dx2,dy2])rotate([0,90,0])rackPin();
+        translate([0,-dx2,dy2])rotate([0,90,0])rackPin();
+        translate([0,dx2,-dy2])rotate([0,90,0])rackPin();
+        translate([0,-dx2,-dy2])rotate([0,90,0])rackPin();
+    }
+}
+
+module rackPlate(dx,dy){
+    dx2 = dx/2;
+    dy2 = dy/2;
+    rotate([0,90,0])//difference()
+    {
+        difference()
+        {
+            cube([2,dx+4,dy+4],center = true);
+            cube([4,dx-3,dy-3],center = true);
+        }
+    }
+    rackPinBase(dx,dy);
+}
+
+
+
+module rackRaspi(){//57.5 49
+    translate([0,0,1]){
+        rackShelfArms();
+        translate([12,0,0]){
+            difference(){
+                rackPlate(49,57.5);
+                rackPins(49,57.5);
+            }
+        }
+    }
+}
+
+
+module rackBuck(){
+    spacing = 8;
+    
+    translate([0,0,30]){
+        difference(){
+            translate([0,0,0]){
+                rackPlate(28.5*2+spacing,59.5);//28.5 59.5   35, 66
+                rackPinBase(spacing,59.5);
+            }
+            rackPins(28.5*2+spacing,59.5);
+            rackPins(spacing,59.5);
+        }
+        
+        rackShelfArms();
+    }
+}
+
+module allRacks(){
+    rackBuck();
+    rackRaspi();
+}
+
+
+module rackVis(){
+    
+    rotate([0,0,segAngle/2]){
+        translate([0,0,-19]){
+            #allRacks();
+             //hardware();
+        }
+        for(i=[0:1:nside])
+        rotate([0,0,segAngle*i])
+            rackShelfClip();
+    }
+}
 
 
 module bodyClamp(){
@@ -162,7 +338,7 @@ module basePunch(scl=1){
 }
 
 module bodyFrame(){
-    difference()
+    //difference()
     {
         /*
         color("Blue") translate([0,0,-2.5]){
@@ -183,6 +359,8 @@ module botLegs(){
 }
 
 module bot(){
+    rackVis();
+
     bodyFrame();
     botLegs();
 }
@@ -275,12 +453,13 @@ module connectorWithWideBase(){ connector(); translate([0,0,3.25]) connectorBase
 
 module strut(){
     //strut
-    strutLen = chordLength*0.4;//baseRadius/PI*2.5;
+    strutLen = chordLength;//baseRadius/PI*2.5;
     tiltAng = 360/(nside*2);
-    rotate([0,0,-45]) translate([-baseRadius+24,0,-2]){
+   // rotate([0,0,-0.5*segAngle]) translate([-baseRadius+24,0,-2]){
+    rotate([0,0,-0.5*segAngle]) translate([-chordRadius+1,0,-2]){
         translate([-1,0,0]) rcube([3,strutLen,15],center = true);
-        translate([2.1,-strutLen*0.5,-1]) rotate([-90,0,tiltAng]) translate([0,-1,-1]) connectorWithWideBase();
-        translate([2.1, strutLen*0.5,-1]) rotate([0,90,tiltAng]) translate([0,0,1.5]) connectorSlotWithWideBase();
+        translate([2.1,-strutLen*0.5,-1]) rotate([-90,0,tiltAng]) translate([0,-1,-1.5]) connectorWithWideBase();
+        translate([2.1, strutLen*0.5,-1]) rotate([0,90,90-tiltAng]) translate([0,0,1.5]) connectorSlotWithWideBase();
         
         translate([3,0,0]) rotate([0,-90,0]) connectorWithWideBase();
         translate([-5,0,1]) rotate([0,-90,0]) connectorSlotWithWideBase();
@@ -295,7 +474,7 @@ module leg(){
     color(color1) strut();
     
     
-    translate([-baseRadius-15,0,0]) rotate([90,0,0])
+    translate([-baseRadius-legInset,0,0]) rotate([90,0,0])
     {
         
         //difference()
