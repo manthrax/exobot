@@ -41,9 +41,14 @@ legInset = 32;
 nside = 4;  //Number of legs 6 = hexapod
 segAngle = 360/nside;
 
-baseRadius = 65;//54;
+baseRadius = 75;//54;
 
-hardwareZOffset = 5;
+hardwareZOffset = -1;
+
+piVerticalOffset = 8.5;
+battVerticalOffset = -18;
+buckVerticalOffset = 36.5;
+
 
 br = baseRadius;
 sa = segAngle;
@@ -71,7 +76,7 @@ color3 = "Orange";
 rackBeamWidth = 23;
 
 
-npart = 130;//17;//80;//70;//17;//15;
+npart = 80;//17;//80;//70;//17;//15;
 doPart(npart);
 
 module doPart(part){
@@ -157,13 +162,14 @@ module hardware(){
         #hcube([66,36,13],center = true);
         translate([0,0,-5.0])color("Red") cube([59.5,28.5,2],center = true);
     }
-        translate([0,0,-13]) #hcube([100,30,20],center = true);//battery
+    
+        translate([0,0,battVerticalOffset]) #hcube([100,30,20],center = true);//battery
         
-        translate([0,0,16]) #hcube([87,57,25],center = true);//pi
-        translate([12,0,4.5]) color("Red") cube([57.5,49,2],center = true);//pi57.5,49
+        translate([0,0,piVerticalOffset]) #hcube([87,57,25],center = true);//pi
+        translate([12,0,piVerticalOffset-11.5]) color("Red") cube([57.5,49,2],center = true);//pi57.5,49
 
-        translate([0, 18.5,39])  buckConverter();
-        translate([0,-18.5,39])  buckConverter();
+        translate([0, 18.5,buckVerticalOffset+9])  buckConverter();
+        translate([0,-18.5,buckVerticalOffset+9])  buckConverter();
     
 }
 
@@ -193,23 +199,24 @@ module rackShelfClip(){
     r2 = chordRadius-7;
     r1 = chordRadius-4;
 //    translate([0,0,-r1]) rotate([180,0,0]) connectorSlot();
-    
+    maskWid = 6;
+    slotWid = maskWid-1;
     module slotMask(){
        for(i=[-1:1:0]){
-            translate([0,0,(29*i)+16]){
-                cube([20,6,2.1],center = true);
-                translate([9,0,1.5])cube([2,6,1],center=true);//Tongue
+            translate([0,0,(43*i)+22.5]){
+                cube([20,maskWid ,2.1],center = true);
+                translate([9,0,1.5])cube([2,maskWid,1],center=true);//Tongue
             }
        }
     }
     
     translate([r1,0,0]){
-        rotate([0,90,0]) socket(false);
+        translate([-1,0,0])rotate([0,90,0]) socket(false);
         translate([0,0,-hardwareZOffset]){
             difference(){
-                translate([-5,0,1.5]) cube([6,5,35],center=true);
+                translate([-5,0,1.5]) cube([6,slotWid,50],center=true);
                 translate([-14,0,0]) slotMask();
-                translate([-8,0,1.5]) cube([8,6,23],center=true);
+                translate([-8,0,1.5]) cube([8,maskWid,36],center=true);
             }
            // translate([-14,0,0]) slotMask();
         }
@@ -262,7 +269,7 @@ module rackPlate(dx,dy){
 
 
 module rackRaspi(){//57.5 49
-    translate([0,0,1]){
+    translate([0,0,piVerticalOffset-15]){
         rackShelfArms();
         translate([12,0,0]){
             difference(){
@@ -277,7 +284,7 @@ module rackRaspi(){//57.5 49
 module rackBuck(){
     spacing = 8;
     
-    translate([0,0,30]){
+    translate([0,0,buckVerticalOffset]){
         difference(){
             translate([0,0,0]){
                 rackPlate(28.5*2+spacing,59.5);//28.5 59.5   35, 66
@@ -300,9 +307,9 @@ module allRacks(){
 module rackVis(){
     
     rotate([0,0,segAngle/2]){
-        translate([0,0,-19]){
-            #allRacks();
-             //hardware();
+        translate([0,0,-(hardwareZOffset+14)]){
+            allRacks();
+             hardware();
         }
         for(i=[0:1:nside])
         rotate([0,0,segAngle*i])
@@ -461,7 +468,7 @@ module strut(){
         translate([2.1,-strutLen*0.5,-1]) rotate([-90,0,tiltAng]) translate([0,-1,-1.5]) connectorWithWideBase();
         translate([2.1, strutLen*0.5,-1]) rotate([0,90,90-tiltAng]) translate([0,0,1.5]) connectorSlotWithWideBase();
         
-        translate([3,0,0]) rotate([0,-90,0]) connectorWithWideBase();
+        translate([3,0,0]) rotate([180,-90,0]) connectorSlotWithWideBase();
         translate([-5,0,1]) rotate([0,-90,0]) connectorSlotWithWideBase();
         
 //        translate([1.1,-strutLen*0.475,0])  rotate([(360/8)-90,90,-90]) cylinder(2.5,7,7,center=true,$fn = 8);
