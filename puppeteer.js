@@ -154,6 +154,7 @@ function Puppeteer() {
         joint = jointsByMeshId[foot.id] = jointsByMeshId[arm1.id] = {
             axis: 'x',
             joint: joint1,
+            flip:true,
             value: prefs.bones[bones.length] ? prefs.bones[bones.length].value : 0
         }
         bones.push(joint)
@@ -175,7 +176,7 @@ function Puppeteer() {
         bone.value = bone.value < -1 ? -1 : bone.value > 1 ? 1 : bone.value;
         var ang = bone.value * jointRangeRadians;
         bone.joint.rotation[bone.axis] = ang;
-        var npwm = (servoMid + (servoRng * bone.value * 0.5)) | 0;
+        var npwm = (servoMid + (servoRng * bone.value * (bone.flip?-0.5:0.5)) | 0;
         if (bone.pwm == undefined)
             bone.pwm = npwm;
         if (npwm != bone.pwm) {
