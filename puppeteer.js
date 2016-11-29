@@ -176,7 +176,7 @@ function Puppeteer() {
         bone.value = bone.value < -1 ? -1 : bone.value > 1 ? 1 : bone.value;
         var ang = bone.value * jointRangeRadians;
         bone.joint.rotation[bone.axis] = ang;
-        var npwm = (servoMid + (servoRng * bone.value * (bone.flip?-0.5:0.5))) | 0;
+        var npwm = (servoMid + (servoRng * bone.value * (bone.flip?-0.5:0.5))) | 0;//grr
         if (bone.pwm == undefined)
             bone.pwm = npwm;
         if (npwm != bone.pwm) {
