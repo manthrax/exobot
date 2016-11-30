@@ -265,6 +265,7 @@ function Puppeteer() {
     this.actionPanel = new ActionPanel();
     this.posePanel = new PosePanel();
     this.timelinePanel = new Timeline();
+    this.scriptPanel = new ScriptPanel();
 
 
 }

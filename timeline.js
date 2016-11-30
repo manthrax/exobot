@@ -1,8 +1,10 @@
 function Timeline() {
     ViewController.call(this, 'Timeline');
     var canv = this.canv = document.createElement('canvas');
+    var bgcanv = this.bgcanv = document.createElement('canvas');
     canv.className = 'timeline-canvas';
     var cctx = this.cctx = canv.getContext('2d');
+    var bgcctx = this.bgcctx = bgcanv.getContext('2d');
     var rateButtons = document.createElement('span');
     this.playbackRate = 1.0;
     var rateValueSpan = document.createElement('span');
@@ -71,6 +73,7 @@ Timeline.prototype = Object.create(ViewController.prototype);
 Timeline.prototype.rebuildFromModel = function() {
     this.rebuildFrameIndex();
     this.rebuildChannelIndex();
+    this.bgDirty = true;
     this.render();
 }
 Timeline.prototype.animate = function() {
@@ -161,6 +164,7 @@ Timeline.prototype.removeNearbyKeys = function() {
         this.removeKeysAtFrame(i);
     }
     this.rebuildChannelIndex();
+    this.bgDirty = true;
     this.render();
 }
 Timeline.prototype.removeKeysAtFrame = function(cf) {
@@ -235,6 +239,7 @@ Timeline.prototype.insertKeyFrame = function() {
         this.insertKey(key);
     }
     this.rebuildChannelIndex();
+    this.bgDirty = true;
     this.render();
 }
 function timelineKeyEvent(evt) {
@@ -278,16 +283,17 @@ Timeline.cosineInterpolate = function(y1,y2,mu)
    return(y1*(1-mu2)+y2*mu2);
 }
 
-Timeline.prototype.render = function() {
-    var canv = this.canv;
-    var cctx = this.cctx;
+Timeline.prototype.renderBackground = function() {
     var canvwidth = this.pane.div.clientWidth;
     var timeWidth = this.frameTimeToPanel(this.maxTime | 0) + 100;
     //canvwidth += 200;
-    canv.width = Math.max(canvwidth, timeWidth);
-    canv.height = 256;
+    var bgcanv = this.bgcanv;
+    var cctx = this.bgcctx;
+    bgcanv.width = Math.max(canvwidth, timeWidth);
+    bgcanv.height = 256;
+
     cctx.fillStyle = 'rgba(128,128,128,0.75)';
-    cctx.fillRect(0, 0, canv.width, canv.height);
+    cctx.fillRect(0, 0, bgcanv.width, bgcanv.height);
     var model = this.pane.model;
     if (model.channels) {
         var chns = model.channels;
@@ -342,6 +348,26 @@ Timeline.prototype.render = function() {
     }
     cctx.closePath()
     cctx.stroke();
+}
+
+Timeline.prototype.render = function() {
+    var canv = this.canv;
+    var bgcanv = this.bgcanv;
+    var bgcctx = this.bgcctx;
+    var cctx = this.cctx;
+    var canvwidth = this.pane.div.clientWidth;
+    var timeWidth = this.frameTimeToPanel(this.maxTime | 0) + 100;
+    //canvwidth += 200;
+    canv.width = Math.max(canvwidth, timeWidth);
+    canv.height = 256;
+
+    if(this.bgDirty){
+        this.renderBackground();
+        this.bgDirty = false;
+    }
+    cctx.drawImage(bgcanv,0,0,bgcanv.width,bgcanv.height);
+
+    var model = this.pane.model;
     if (model.currentFrame) {
         this.strokeFrameMarker(model.currentFrame);
         this.strokeFrameData(model.currentFrame);
