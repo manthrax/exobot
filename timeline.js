@@ -76,7 +76,9 @@ Timeline.prototype.rebuildFromModel = function() {
     this.bgDirty = true;
     this.render();
 }
+
 Timeline.prototype.animate = function() {
+
     if (this.isPlaying) {
         var left = this.playStartFrame | 0;
         var right = this.playEndFrame | 0;
@@ -87,7 +89,13 @@ Timeline.prototype.animate = function() {
             right = swp;
             dir = -1;
         }
-        var pf = this.pane.model.currentFrame += dir * this.playbackRate;
+        var dt = performance.now();
+        if(!this.lastNow){this.lastNow = dt;dt = 1;}else{sv = this.lastNow; this.lastNow =  dt; dt-=sv;}
+
+        dt = dt/(1000.0/60);
+        
+
+        var pf = this.pane.model.currentFrame += dir * this.playbackRate * dt;
         if(left!=right){
             if(pf>right)pf=((pf-left) % (right-left))+left;
             else if(pf<left)pf=right+((pf-left) % (right-left));

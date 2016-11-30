@@ -281,7 +281,13 @@ function App() {
         return null ;
     }
     this.saveState = saveState;
+
+    var fadeDuration = 2000;
+    var fadeEndTime;
+    var fadeDone;
+
     function render() {
+        requestAnimationFrame(render);
         if (!loadsFinished && activeMeshLoads == 0) {
             loadsFinished = true;
             window.puppeteer.buildBot();
@@ -292,8 +298,24 @@ function App() {
             window.addEventListener('mouseout', mup, false);
             window.addEventListener('mousemove', mmove, false);
             window.addEventListener('mousewheel', mwheel, false);
+
         }
-        requestAnimationFrame(render);
+        if(loadsFinished && !fadeDone){
+            var now = performance.now();
+            if(!fadeEndTime){
+                fadeEndTime = now+fadeDuration;
+                window.blocker.style.display = 'block';
+            }else if(now<fadeEndTime)
+            {
+                window.blocker.style.opacity = (fadeEndTime - now)/fadeDuration;
+
+                return;
+            }else{
+                window.blocker.style.display = 'none';
+                fadeDone=true;
+            }
+        }
+        
         renderer.setSize(window.innerWidth, window.innerHeight);
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();

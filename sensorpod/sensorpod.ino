@@ -19,17 +19,37 @@
 
 // include the SoftwareSerial library so we can use it to talk to the Emic 2 module
 #include <SoftwareSerial.h>
+#include <Wire.h>
 
 #define rxPin 0    // Serial input (connects to Emic 2 SOUT)
 #define txPin 1    // Serial output (connects to Emic 2 SIN)
 #define ledPin 13  // Most Arduino boards have an on-board LED on this pin
 
+const int sigSonar = 2;
+
+const byte i2cSlaveId = 8;
+
 // set up a new serial port
 SoftwareSerial emicSerial =  SoftwareSerial(rxPin, txPin);
 
 
+ 
+void requestCallback(){
+    pingSonar(); 
+}
+
+void receiveCallback(int count){
+  
+}
+
 void setup()  // Set up code called once on start-up
 {
+
+  Wire.begin(i2cSlaveId);
+  
+  Wire.onReceive(receiveCallback);
+  Wire.onRequest(requestCallback);
+  
   // define pin modes
   pinMode(ledPin, OUTPUT);
   pinMode(rxPin, INPUT);
@@ -51,6 +71,7 @@ void setup()  // Set up code called once on start-up
   delay(10);                          // Short delay
   emicSerial.flush();                 // Flush the receive buffer
 }
+
 
 void loop()  // Main code, to run repeatedly
 {
@@ -79,27 +100,26 @@ void loop()  // Main code, to run repeatedly
     delay(100);
     digitalWrite(ledPin, LOW);
     
-   pingSonar();
+   //pingSonar();
     
   }
 }
 
 
-const int sig = 4;
 int lastCM = 0;
 void pingSonar() {
     
   long duration, inches, cm;
   
-  pinMode(sig, OUTPUT);  
-  digitalWrite(sig, LOW);
+  pinMode(sigSonar, OUTPUT);  
+  digitalWrite(sigSonar, LOW);
   delay(2);
-  digitalWrite(sig, HIGH);
+  digitalWrite(sigSonar, HIGH);
   delay(10);
-  digitalWrite(sig, LOW);
+  digitalWrite(sigSonar, LOW);
   
-  pinMode(sig, INPUT);
-  duration = pulseIn(sig, HIGH);
+  pinMode(sigSonar, INPUT);
+  duration = pulseIn(sigSonar, HIGH);
   
   inches = microsecondsToInches(duration);
   cm = microsecondsToCentemeters(duration);
