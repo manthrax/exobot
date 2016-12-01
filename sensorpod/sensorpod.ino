@@ -26,6 +26,7 @@
 #define ledPin 13  // Most Arduino boards have an on-board LED on this pin
 
 const int sigSonar = 2;
+long lastPing = 0;
 
 const byte i2cSlaveId = 8;
 
@@ -42,12 +43,20 @@ void speak(const char* str){
 volatile int gotData = 0;
 volatile int gotRequest = 0;
 void requestCallback(){
+  Wire.write(65);
+  Wire.write(66);
+  Wire.write(67);
+  Wire.write(68);
   gotRequest=1;
 }
 
+char byteBuf[256];
 
 void receiveCallback(int count){
-  gotData = count;
+  int i=0;
+  while (Wire.available()>0){byteBuf[i]= (char)Wire.read();i=(i+1)&255;} // receive byte as a character
+  byteBuf[i]=0;
+  gotData = i;
 }
 
 void setup()  // Set up code called once on start-up
@@ -85,7 +94,7 @@ void loop()  // Main code, to run repeatedly
 {
   // Speak some text
   digitalWrite(ledPin, HIGH);         // Turn on LED while Emic is outputting audio
-  speak("Hello Mama jamas! I am Exo bot.");
+  speak("My name is legion. For we are many.");
   digitalWrite(ledPin, LOW);
  
   delay(500);    // 1/2 second delay
@@ -114,18 +123,18 @@ int   blinkToggle=0;
         String str;
         str = "Got recieve : ";
         str += gotData;
-        speak(str.c_str());
-        str="";
-        while (Wire.available())str += (char)Wire.read(); // receive byte as a character  
-        speak(str.c_str());
-        
+        for(int i=0;i<gotData;i++){
+          str = " Byte ";
+          str+=i;
+          str += " is ";
+          str += byteBuf[i];
+          speak(str.c_str());        
+        }       
         gotData = 0;
-        Wire.write(66);
-
+//        Wire.write(66);
     }
     if(gotRequest>0){
       speak("Got Request.");
-      Wire.write(65);
       gotRequest = 0;
     }
    //pingSonar();

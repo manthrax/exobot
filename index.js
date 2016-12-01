@@ -163,12 +163,12 @@ wss.on("connection", function(ws) {
 				sensorLink.writeBytes(data.sensor.cmd,data.sensor.data,function err(e,d){
 					ws.send("YIKES!");//{cmd:"error",data:"Sensor error!"});
 					log("SensorLink write failed!"+JSON.stringify(e)+":"+JSON.stringify(d));
-				});
-				sensorLink.readBytes(8, 1, function(err, res) {
+				});/*
+				sensorLink.readBytes(8, 4, function(err, res) {
 				  // result contains a buffer of bytes 
 					log("SensorLink readBytes failed!"+JSON.stringify(err)+":"+JSON.stringify(res));
 
-				});
+				});*/
 			}
 		}
 		catch(e){
