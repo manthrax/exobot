@@ -39,11 +39,12 @@ void speak(const char* str){
   while (emicSerial.read() != ':'); // Wait here until the Emic 2 responds with a ":" indicating it's ready to accept the next command
 }
 
+volatile int gotData = 0;
+volatile int gotRequest = 0;
 void requestCallback(){
-  speak("Got Request.");
+  gotRequest=1;
 }
 
-volatile int gotData = 0;
 
 void receiveCallback(int count){
   gotData = count;
@@ -117,6 +118,12 @@ void loop()  // Main code, to run repeatedly
         gotData = 0;
         Wire.write(66);
 
+    }
+    if(gotRequest>0){
+      speak("Got Request.");
+      for(int i=0;i<gotRequest;i++)
+      Wire.write(65+i);
+      gotRequest = 0;
     }
    //pingSonar();
     
