@@ -20,11 +20,11 @@ function Puppeteer() {
     
     function readSensor(name,cb){
         if(!activeSensor){
-            var sens = activeSensor =sensors[name];
+            var sens = sensors[name];
             sens.cb = cb;
             puppeteer.send({sensor:{cmd:sens.cmd,send:true,data:""}});
             if(sens.resp){
-                activeSensor = name;
+                activeSensor = sens;
                 setTimeout(function(){
                     puppeteer.send({sensor:{cmd:0,request:true,data:""}})
                 },sens.delay);
