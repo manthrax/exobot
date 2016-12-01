@@ -7,5 +7,6 @@
 	if [ $? -ne 0 ] 
 	then
 		echo "FailWagon"
+	fi
 #	echo $?
 #done
