@@ -20,7 +20,7 @@ function Puppeteer() {
     
     function readSensor(name,cb){
         if(!activeSensor){
-            var sens = sensors[name];
+            var sens = activeSensor =sensors[name];
             sens.cb = cb;
             puppeteer.send({sensor:{cmd:sens.cmd,send:true,data:""}});
             if(sens.resp){
@@ -36,7 +36,7 @@ function Puppeteer() {
         if(activeSensor){
             activeSensor.parser(data,activeSensor.cb);
             activeSensor = undefined;
-        }            
+        }
     }
     
     var sonarPinger = setInterval(function(){
