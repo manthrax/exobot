@@ -10,8 +10,11 @@ var i2c = require("i2c");
 var sensorLink = new i2c(0x08, {device: '/dev/i2c-1'});
 
 var clientSock;
+var makePwm;
+var debugLevel = 1;
 
 function log(params){
+	if(!debugLevel)return;
 	var str="";
 	for (var i = 0; i < arguments.length; i++)str+=arguments[i];
 	if(clientSock)
@@ -26,7 +29,6 @@ sensorLink.on('data', function(data) {
 
 
 
-var makePwm;
 try{
  	makePwm = require( "adafruit-pca9685" );
 }
