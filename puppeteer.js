@@ -2,49 +2,66 @@ function Puppeteer() {
     var app = this.app = new App();
     var prefs = app.getPrefs();
     var connected = false;
-    function showStatus(stat){
+    function showStatus(stat) {
         statusText.innerHTML = stat;
-       
     }
-
-
-    function interpretLong(data,cbfn){
-        cbfn(data[0]|(data[1]<<8)|(data[2]<<16)|(data[3]<<24));
+    function interpretLong(data, cbfn) {
+        cbfn(data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24));
     }
-
-    var sensors={
-        sonar:{cmd:0,resp:4,delay:100,parser:interpretLong}
+    var sensors = {
+        sonar: {
+            cmd: 0,
+            resp: 4,
+            delay: 100,
+            parser: interpretLong
+        }
     }
-    
     var activeSensor;
-    
-    function readSensor(name,cb){
-        if(!activeSensor){
+    function readSensor(name, cb) {
+        if (!activeSensor) {
             var sens = sensors[name];
             sens.cb = cb;
-            puppeteer.send({sensor:{cmd:sens.cmd,send:true,data:""}});
-            if(sens.resp){
+            puppeteer.send({
+                sensor: {
+                    cmd: sens.cmd,
+                    send: true,
+                    data: ""
+                }
+            });
+            if (sens.resp) {
                 activeSensor = sens;
-                setTimeout(function(){
-                    puppeteer.send({sensor:{cmd:0,request:true,data:""}})
-                },sens.delay);
+                setTimeout(function() {
+                    puppeteer.send({
+                        sensor: {
+                            cmd: 0,
+                            request: true,
+                            data: ""
+                        }
+                    })
+                }, sens.delay);
             }
         }
     }
-
-    function dispatchSensorReading(data){
-        if(activeSensor){
-            activeSensor.parser(data,activeSensor.cb);
+    function dispatchSensorReading(data) {
+        if (activeSensor) {
+            activeSensor.parser(data, activeSensor.cb);
             activeSensor = undefined;
         }
     }
-    
-    var sonarPinger = setInterval(function(){
-        readSensor('sonar',function(dist){
-            showStatus(""+dist);
+    var sonarVis;
+    var material = new THREE.MeshPhongMaterial({
+        color: 0xffffff,
+        specular: 0x111111,
+        shininess: 100
+    });
+    var geometry = new THREE.BoxGeometry(1,1,2);
+    sonarVis = new THREE.Mesh(geometry,material);
+    scene.add(sonarVis);
+    var sonarPinger = setInterval(function() {
+        readSensor('sonar', function(dist) {
+            showStatus("" + dist);
         });
-    },125);
-
+    }, 125);
     try {
         var connection = new WebSocket('ws://' + location.host,['soap', 'xmpp']);
         connection.onopen = function() {
@@ -59,10 +76,10 @@ function Puppeteer() {
         }
         // Log messages from the server
         connection.onmessage = function(e) {
-            if(e.data.charAt(0)==='{'){
+            if (e.data.charAt(0) === '{') {
                 var dat = JSON.parse(e.data).rsp;
                 dispatchSensorReading(dat);
-            }else
+            } else
                 console.log('Server: ' + e.data);
         }
     } catch (err) {
@@ -163,7 +180,7 @@ function Puppeteer() {
         mesh1.bone = arm0.bone = bones.length;
         //mesh1.bone = bones.length+1;
         arm1.bone = foot.bone = bones.length + 1;
-        var rad2=rad+1;
+        var rad2 = rad + 1;
         shoulder.position.x = Math.sin(ang) * rad * 0.5;
         shoulder.position.z = Math.cos(ang) * rad * 0.5;
         shoulder.rotation.y = ang;
@@ -197,7 +214,7 @@ function Puppeteer() {
         joint = jointsByMeshId[foot.id] = jointsByMeshId[arm1.id] = {
             axis: 'x',
             joint: joint1,
-            flip:true,
+            flip: true,
             value: prefs.bones[bones.length] ? prefs.bones[bones.length].value : 0
         }
         bones.push(joint)
@@ -219,7 +236,8 @@ function Puppeteer() {
         bone.value = bone.value < -1 ? -1 : bone.value > 1 ? 1 : bone.value;
         var ang = bone.value * jointRangeRadians;
         bone.joint.rotation[bone.axis] = ang;
-        var npwm = (servoMid + (servoRng * bone.value * (bone.flip?0.5:-0.5))) | 0;//grr
+        var npwm = (servoMid + (servoRng * bone.value * (bone.flip ? 0.5 : -0.5))) | 0;
+        //grr
         if (bone.pwm == undefined)
             bone.pwm = npwm;
         if (npwm != bone.pwm) {
@@ -248,7 +266,6 @@ function Puppeteer() {
         if (pkt.bones.length) {
             send(pkt);
         }
-
     }
     function angleChanged(evt) {
         if (selectedBone) {
@@ -309,27 +326,22 @@ function Puppeteer() {
     this.posePanel = new PosePanel();
     this.timelinePanel = new Timeline();
     this.scriptPanel = new ScriptPanel();
-
-
 }
 function start() {
     var puppeteer = window.puppeteer = new Puppeteer();
     /*----------------------------------*/
-//    var smworld = new SMWorld(puppeteer.app);
+    //    var smworld = new SMWorld(puppeteer.app);
     /*-----------------------------*/
 }
-
-Puppeteer.prototype.importModel = function(model){
+Puppeteer.prototype.importModel = function(model) {
     this.timelinePanel.pane.model = model;
     this.timelinePanel.pane.state.model = model;
     this.timelinePanel.render();
 }
-
-Puppeteer.prototype.exportModel = function(){
+Puppeteer.prototype.exportModel = function() {
     //this.userDownload("botmodel.json",JSON.stringify(this.timelinePanel.pane.model));
-    this.userDownload("botstate.json",JSON.stringify(this.app.getState()));
+    this.userDownload("botstate.json", JSON.stringify(this.app.getState()));
 }
-
 Puppeteer.prototype.userDownload = function(filename, text) {
     var element = document.createElement('a');
     if (typeof text == 'string') {
