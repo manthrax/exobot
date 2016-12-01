@@ -21,8 +21,8 @@
 #include <SoftwareSerial.h>
 #include <Wire.h>
 
-#define rxPin 0    // Serial input (connects to Emic 2 SOUT)
-#define txPin 1    // Serial output (connects to Emic 2 SIN)
+#define rxPin 8    // Serial input (connects to Emic 2 SOUT)
+#define txPin 9    // Serial output (connects to Emic 2 SIN)
 #define ledPin 13  // Most Arduino boards have an on-board LED on this pin
 
 const int sigSonar = 2;
@@ -32,14 +32,19 @@ const byte i2cSlaveId = 8;
 // set up a new serial port
 SoftwareSerial emicSerial =  SoftwareSerial(rxPin, txPin);
 
-
+void speak(const char* str){  
+  emicSerial.print('S');
+  emicSerial.print(str);
+  emicSerial.print('\n');
+  while (emicSerial.read() != ':'); // Wait here until the Emic 2 responds with a ":" indicating it's ready to accept the next command
+}
  
 void requestCallback(){
-    pingSonar(); 
+  speak("Got Request.");
 }
 
 void receiveCallback(int count){
-  
+  speak("Got Receive.");  
 }
 
 void setup()  // Set up code called once on start-up
@@ -76,11 +81,8 @@ void setup()  // Set up code called once on start-up
 void loop()  // Main code, to run repeatedly
 {
   // Speak some text
-  emicSerial.print('S');
-  emicSerial.print("Hello.");// My name is the Emic 2 Text-to-Speech module. I would like to sing you a song.");  // Send the desired string to convert to speech
-  emicSerial.print('\n');
   digitalWrite(ledPin, HIGH);         // Turn on LED while Emic is outputting audio
-  while (emicSerial.read() != ':');   // Wait here until the Emic 2 responds with a ":" indicating it's ready to accept the next command
+  speak("Hello Mamajamas! I am Exobot.");
   digitalWrite(ledPin, LOW);
     
   delay(500);    // 1/2 second delay
@@ -136,7 +138,6 @@ void pingSonar() {
     emicSerial.print("S ");
     emicSerial.print(cm);
     emicSerial.print("\n");
-    
     while (emicSerial.read() != ':');   // Wait here until the Emic 2 responds with a ":" indicating it's ready to accept the next command
   }
 

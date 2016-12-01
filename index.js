@@ -152,7 +152,7 @@ wss.on("connection", function(ws) {
 			if(data.sensor){
 				sensorLink.writeBytes(data.sensor.cmd,data.sensor.data,function err(e){
 					ws.send("YIKES!");//{cmd:"error",data:"Sensor error!"});
-					console.log("SensorLink write failed!");
+					console.log("SensorLink write failed!"+JSON.stringify(e));
 				});
 			}
 		}
