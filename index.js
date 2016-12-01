@@ -103,6 +103,7 @@ var connections = [];
 var wss = new WebSocketServer({server: server})
 log("websocket server created")
 
+function strToAsciiArray(str){var arr=[]; for(var i=0;i<str.length;i++)arr.push(str.charCodeAt(i));return arr;}
 
 wss.on("connection", function(ws) {
 	clientSock = ws;
@@ -160,15 +161,22 @@ wss.on("connection", function(ws) {
 				});
 			}
 			if(data.sensor){
-				sensorLink.writeBytes(data.sensor.cmd,data.sensor.data,function err(e,d){
-					ws.send("YIKES!");//{cmd:"error",data:"Sensor error!"});
-					log("SensorLink write failed!"+JSON.stringify(e)+":"+JSON.stringify(d));
-				});/*
-				sensorLink.readBytes(8, 4, function(err, res) {
-				  // result contains a buffer of bytes 
-					log("SensorLink readBytes failed!"+JSON.stringify(err)+":"+JSON.stringify(res));
-
-				});*/
+				if(data.sensor.send){
+					if(typeof data.sensor.data === 'string'){//Speak
+						sensorLink.writeBytes(data.sensor.cmd,strToAsciiArray(data.sensor.data),function err(e,d){
+							log("SensorLink write callback:"+JSON.stringify(e)+":"+JSON.stringify(d));
+						});
+					}else{
+						sensorLink.writeBytes(data.sensor.cmd,data.sensor.data,function err(e,d){
+							log("SensorLink write callback:"+JSON.stringify(e)+":"+JSON.stringify(d));
+						});
+					}
+				}else if(data.sensor.request){
+					sensorLink.readBytes(8, 4, function(err, res) {
+					  // result contains a buffer of bytes 
+						log("SensorLink read callback!"+JSON.stringify(err)+":"+JSON.stringify(res));
+					});					
+				}
 			}
 		}
 		catch(e){

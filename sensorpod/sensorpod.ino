@@ -41,6 +41,7 @@ void speak(const char* str){
 }
 
 volatile int gotData = 0;
+volatile int gotCount = 0;
 volatile int gotRequest = 0;
 void requestCallback(){
   Wire.write(65);
@@ -54,6 +55,7 @@ char byteBuf[256];
 
 void receiveCallback(int count){
   int i=0;
+  gotCount = count;
   while (Wire.available()>0){byteBuf[i]= (char)Wire.read();i=(i+1)&255;} // receive byte as a character
   byteBuf[i]=0;
   gotData = i;
@@ -108,7 +110,7 @@ void loop()  // Main code, to run repeatedly
   digitalWrite(ledPin, LOW);
 
   speak("System ready.");
-int   blinkToggle=0;
+  int   blinkToggle=0;
   while(1)      // Demonstration complete!
   {
     if(blinkToggle==0){
@@ -121,17 +123,21 @@ int   blinkToggle=0;
 
     if(gotData>0){
         String str;
-        str = "Got recieve : ";
+        str = "Got receive : ";
         str += gotData;
-        for(int i=0;i<gotData;i++){
-          str = " Byte ";
-          str+=i;
-          str += " is ";
-          str += byteBuf[i];
-          speak(str.c_str());        
-        }       
+        speak(str.c_str());
+
+        str = "Data count is: ";
+        str += gotCount;
+        speak(str.c_str());
+        
+        str = "First byte is: ";
+        str += (int)(byteBuf[0]);
+        speak(str.c_str());
+        
+        str = (const char*)(&byteBuf[1]);
+        speak(str.c_str());
         gotData = 0;
-//        Wire.write(66);
     }
     if(gotRequest>0){
       speak("Got Request.");
