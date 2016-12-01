@@ -6,7 +6,7 @@ function Puppeteer() {
         statusText.innerHTML = stat;
     }
     function interpretLong(data, cbfn) {
-        cbfn(data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24));
+        cbfn(data[0] | (data[1] << 8));// | (data[1] << 16) | (data[3] << 24));
     }
     var sensors = {
         sonar: {
