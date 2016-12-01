@@ -59,8 +59,10 @@ function Puppeteer() {
     app.scene.add(sonarVis);
     var sonarPinger = setInterval(function() {
         readSensor('sonar', function(dist) {
-            showStatus("" + dist);
-            if(sonarVis)sonarVis.position.x=dist;
+            if(dist>0){
+               //showStatus("" + dist);
+                if(sonarVis)sonarVis.position.x=(dist/100)+5;
+            }
         });
     }, 125);
     try {
