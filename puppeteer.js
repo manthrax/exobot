@@ -13,7 +13,7 @@ function Puppeteer() {
     }
 
     var sensors={
-        sonar:{cmd:0,resp:4,delay:100,parser:interpretLong}
+        sonar:{cmd:0,resp:4,delay:200,parser:interpretLong}
     }
     
     var activeSensor;
