@@ -99,20 +99,24 @@ void loop()  // Main code, to run repeatedly
   digitalWrite(ledPin, LOW);
 
   speak("System ready.");
-
+int   blinkToggle=0;
   while(1)      // Demonstration complete!
   {
-    delay(100);
-    digitalWrite(ledPin, HIGH);
-    delay(100);
-    digitalWrite(ledPin, LOW);
+    if(blinkToggle==0){
+      
+      digitalWrite(ledPin, HIGH);
+    }else if(blinkToggle==128){
+      digitalWrite(ledPin, LOW);
+    }
+    blinkToggle=(blinkToggle+1)&255;
+
     if(gotData>0){
         String str;
         str = "Got recieve : ";
         str += gotData;
         speak(str.c_str());
         str="";
-        while (Wire.available())str += Wire.read(); // receive byte as a character  
+        while (Wire.available())str += (char)Wire.read(); // receive byte as a character  
         speak(str.c_str());
         
         gotData = 0;
@@ -121,12 +125,11 @@ void loop()  // Main code, to run repeatedly
     }
     if(gotRequest>0){
       speak("Got Request.");
-      for(int i=0;i<gotRequest;i++)
-      Wire.write(65+i);
+      Wire.write(65);
       gotRequest = 0;
     }
    //pingSonar();
-    
+    delay(1);
   }
 }
 

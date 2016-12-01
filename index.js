@@ -9,10 +9,19 @@ var i2c = require("i2c");
 
 var sensorLink = new i2c(0x08, {device: '/dev/i2c-1'});
 
+var clientSock;
+
+function log(params){
+	var str="";
+	for (var i = 0; i < arguments.length; i++)str+=arguments[i];
+	if(clientSock)
+		clientSock.send(str);
+	log(str);
+}
 
 
 sensorLink.on('data', function(data) {
-	console.log("Got data from sensor:",JSON.stringify(data));
+	log("Got data from sensor:",JSON.stringify(data));
 });
 
 
@@ -22,7 +31,7 @@ try{
  	makePwm = require( "adafruit-pca9685" );
 }
 catch(err){
-	console.log("Couldn't load pwm library.")
+	log("Couldn't load pwm library.")
 	makePwm=function(){return {stop:function(){},setPwm:function(){}}}
 }
 
@@ -30,13 +39,13 @@ var correctionFactor;//=1.118;
 var pwm = makePwm({"freq": 60});//, "correctionFactor": 1.118});
 
 function parseConfig(cfg){
-	console.log(cfg)
+	log(cfg)
 	if(cfg.freq||cfg.correctionFactor){
 		if(pwm)
 			pwm.stop();
 		pwm = makePwm({"freq": cfg.freq?cfg.freq:60, "correctionFactor":cfg.correctionFactor?cfg.correctionFactor:0});
 	}
-	console.log("Parsed config.");
+	log("Parsed config.");
 }
 
 parseConfig({servoMin:200,servoMax:700,freq:60,correctionFactor:undefined});
@@ -62,7 +71,7 @@ app.use(function(req, res, next) {
 
 
 process.argv.forEach(function (val, index, array) {
-  console.log(index + ': ' + val);
+  log(index + ': ' + val);
 });
 
 var serveRoot = "";
@@ -85,33 +94,34 @@ app.use(express.static(webroot))
 var server = http.createServer(app)
 server.listen(port)
 
-console.log("http serving:"+webroot+" on port %d", port)
+log("http serving:"+webroot+" on port %d", port)
 
 //var playerIdBase=0;
 var connections = [];
 
 
 var wss = new WebSocketServer({server: server})
-console.log("websocket server created")
+log("websocket server created")
 
 
 wss.on("connection", function(ws) {
-
+	clientSock = ws;
 	//ws.playerId = playerIdBase++;
 
-	console.log("websocket connection opened..");//,ws.playerId)
+	log("websocket connection opened..");//,ws.playerId)
 
 	//GameServer.processEvent({cmd:'connected',obj:ws.playerId},ws); //Broadcast to all
 
 	ws.on("close", function() {
+		clientSock = undefined;
 		//GameServer.processEvent({cmd:'disconnected',obj:ws.playerId},ws);
-		console.log("websocket connection closed:",ws.playerId)
+		log("websocket connection closed:",ws.playerId)
 	})
 
 	ws.on("message",function(msg){
 		try{
 			var data = JSON.parse(msg);
-			//console.log("Got message from:",ws.playerId," : ",msg)
+			//log("Got message from:",ws.playerId," : ",msg)
 			//data.obj = ws.playerId;	//slam playerID
 			//GameServer.processEvent(data,ws);
 			if(data.config!=undefined){
@@ -125,7 +135,7 @@ wss.on("connection", function(ws) {
 					sstr+="c:"+bone.c+" v:"+sval;
 					pwm.setPwm(bone.c, 0, sval);
 				}
-				console.log(sstr);
+				log(sstr);
 			}
 			if(data.stop){
 				pwm.stop();
@@ -133,13 +143,13 @@ wss.on("connection", function(ws) {
 			if(data.restartServer)
 				setTimeout(function(){
 					//Cause the server to restart....
-					console.log("Restarting server....");
+					log("Restarting server....");
 					process.exit(0);
 				},100);
 			if(data.killServer)
 				setTimeout(function(){
 					//Cause the server to restart....
-					console.log("Killing server....");
+					log("Killing server....");
 					process.exit(-1);
 				},100);
 			if(data.burnToBot){
@@ -152,20 +162,17 @@ wss.on("connection", function(ws) {
 			if(data.sensor){
 				sensorLink.writeBytes(data.sensor.cmd,data.sensor.data,function err(e,d){
 					ws.send("YIKES!");//{cmd:"error",data:"Sensor error!"});
-					console.log("SensorLink write failed!"+JSON.stringify(e)+":"+JSON.stringify(d));
-
-
-
+					log("SensorLink write failed!"+JSON.stringify(e)+":"+JSON.stringify(d));
 				});
 				sensorLink.readBytes(8, 1, function(err, res) {
 				  // result contains a buffer of bytes 
-					console.log("SensorLink readBytes failed!"+JSON.stringify(err)+":"+JSON.stringify(res));
+					log("SensorLink readBytes failed!"+JSON.stringify(err)+":"+JSON.stringify(res));
 
 				});
 			}
 		}
 		catch(e){
-			console.log("Got malformed data from client:",ws.playerId,JSON.stringify(msg));
+			log("Got malformed data from client:",ws.playerId,JSON.stringify(msg));
 		}
 	});
 })
