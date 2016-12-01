@@ -28,6 +28,10 @@
 const int sigSonar = 2;
 long lastPing = 0;
 
+long duration;
+int lastCM = 0;
+
+int debugLevel = 0;
 const byte i2cSlaveId = 8;
 
 // set up a new serial port
@@ -43,11 +47,11 @@ void speak(const char* str){
 volatile int gotData = 0;
 volatile int gotCount = 0;
 volatile int gotRequest = 0;
+volatile int curCommand = 0;
 void requestCallback(){
-  Wire.write(65);
-  Wire.write(66);
-  Wire.write(67);
-  Wire.write(68);
+  if(curCommand==0){
+    for(int i=0;i<4;i++)Wire.write(((char*)&duration)[i]);
+  }
   gotRequest=1;
 }
 
@@ -102,7 +106,7 @@ void loop()  // Main code, to run repeatedly
   delay(500);    // 1/2 second delay
     
   // Sing a song
-  emicSerial.print("D3\n");
+  emicSerial.print("D2\n");
   digitalWrite(ledPin, HIGH);         // Turn on LED while Emic is outputting audio
   while (emicSerial.read() != ':'){
     delay(100);   // Wait here until the Emic 2 responds with a ":" indicating it's ready to accept the next command
@@ -122,37 +126,51 @@ void loop()  // Main code, to run repeatedly
     blinkToggle=(blinkToggle+1)&255;
 
     if(gotData>0){
-        String str;
-        str = "Got receive : ";
-        str += gotData;
-        speak(str.c_str());
-
-        str = "Data count is: ";
-        str += gotCount;
-        speak(str.c_str());
+        int cmd = byteBuf[0];
+        curCommand = cmd;
+        if(cmd==123){
+          String str = (const char*)(&byteBuf[1]);
+          speak(str.c_str());
+        }else if(cmd==0){
+          pingSonar();
+        }else if(cmd==126){
+          debugLevel = 1;
+          speak("debug 1");
+        }else if(cmd==127){
+          debugLevel = 0;
+          speak("debug 0");
+        }
         
-        str = "First byte is: ";
-        str += (int)(byteBuf[0]);
-        speak(str.c_str());
-        
-        str = (const char*)(&byteBuf[1]);
-        speak(str.c_str());
+        if(debugLevel){
+          String str;
+          str = "Got receive : ";
+          str += gotData;
+          speak(str.c_str());
+  
+          str = "Data count is: ";
+          str += gotCount;
+          speak(str.c_str());
+          
+          str = "First byte is: ";
+          str += (int)(byteBuf[0]);
+          speak(str.c_str());
+        }
         gotData = 0;
     }
+
     if(gotRequest>0){
-      speak("Got Request.");
+      if(debugLevel){
+        speak("Got Request.");
+      }
       gotRequest = 0;
     }
-   //pingSonar();
     delay(1);
   }
 }
 
-
-int lastCM = 0;
 void pingSonar() {
     
-  long duration, inches, cm;
+  long inches, cm;
   
   pinMode(sigSonar, OUTPUT);  
   digitalWrite(sigSonar, LOW);
@@ -176,13 +194,14 @@ void pingSonar() {
   */
   if(lastCM!=cm){
     lastCM = cm;
-    emicSerial.print("S ");
-    emicSerial.print(cm);
-    emicSerial.print("\n");
-    while (emicSerial.read() != ':');   // Wait here until the Emic 2 responds with a ":" indicating it's ready to accept the next command
+      if(debugLevel){
+        emicSerial.print("S ");
+        emicSerial.print(cm);
+        emicSerial.print("\n");
+        while (emicSerial.read() != ':');   // Wait here until the Emic 2 responds with a ":" indicating it's ready to accept the next command
+      }
   }
-
-  delay(500);
+  //delay(500);
 }
   
   long microsecondsToInches(long microseconds) {

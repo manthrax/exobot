@@ -164,18 +164,19 @@ wss.on("connection", function(ws) {
 				if(data.sensor.send){
 					if(typeof data.sensor.data === 'string'){//Speak
 						sensorLink.writeBytes(data.sensor.cmd,strToAsciiArray(data.sensor.data),function err(e,d){
-							log("SensorLink write callback:"+JSON.stringify(e)+":"+JSON.stringify(d));
+							//log("SensorLink write callback:"+JSON.stringify(e)+":"+JSON.stringify(d));
 						});
 					}else{
 						sensorLink.writeBytes(data.sensor.cmd,data.sensor.data,function err(e,d){
-							log("SensorLink write callback:"+JSON.stringify(e)+":"+JSON.stringify(d));
+							//log("SensorLink write callback:"+JSON.stringify(e)+":"+JSON.stringify(d));
 						});
 					}
 				}else if(data.sensor.request){
 					sensorLink.readBytes(8, 4, function(err, res) {
-					  // result contains a buffer of bytes 
-						log("SensorLink read callback!"+JSON.stringify(err)+":"+JSON.stringify(res));
-					});					
+					  // result contains a buffer of bytes
+						//log("SensorLink read callback!"+JSON.stringify(err)+":"+JSON.stringify(res));
+						ws.send(JSON.stringify({rsp:res}));
+					});
 				}
 			}
 		}
