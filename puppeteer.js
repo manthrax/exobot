@@ -6,6 +6,20 @@ function Puppeteer() {
         statusText.innerHTML = stat;
        
     }
+
+
+    function interpretLong(data,cbfn){
+
+    }
+
+    var sensorDefs={
+        sonar:{cmd:0,size:4,interpretLong}
+    }
+    function readSensor(name,cb){
+        puppeteer.send({sensor:{cmd:0,send:true,data:""}})
+        puppeteer.send({sensor:{cmd:0,request:true,data:""}})
+    }
+
     try {
         var connection = new WebSocket('ws://' + location.host,['soap', 'xmpp']);
         connection.onopen = function() {
@@ -20,7 +34,12 @@ function Puppeteer() {
         }
         // Log messages from the server
         connection.onmessage = function(e) {
-            console.log('Server: ' + e.data);
+            if(e.data.charAt(0)==='{'){
+                var dat = JSON.parse(e.data);
+                var nlong = dat[0]|(dat[1]<<8)|(dat[2]<<16)|(dat[3]<<24);
+                console.log(nlong);
+            }else
+                console.log('Server: ' + e.data);
         }
     } catch (err) {
         showStatus("Robot socket not available!")
