@@ -5,5 +5,5 @@
 	sudo git pull
 	sudo node index.js
 	if [ $? -ne 0 ] exit $?
-	echo $?
+#	echo $?
 #done
