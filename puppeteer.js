@@ -56,7 +56,7 @@ function Puppeteer() {
     });
     var geometry = new THREE.BoxGeometry(1,1,2);
     sonarVis = new THREE.Mesh(geometry,material);
-    scene.add(sonarVis);
+    app.scene.add(sonarVis);
     var sonarPinger = setInterval(function() {
         readSensor('sonar', function(dist) {
             showStatus("" + dist);
