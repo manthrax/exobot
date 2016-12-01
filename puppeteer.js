@@ -50,8 +50,8 @@ function Puppeteer() {
     }
     var sonarVis;
     var material = new THREE.MeshPhongMaterial({
-        color: 0xffffff,
-        specular: 0x111111,
+        color: 0xffff00,
+        specular: 0x110000,
         shininess: 100
     });
     var geometry = new THREE.BoxGeometry(1,1,2);
@@ -60,6 +60,7 @@ function Puppeteer() {
     var sonarPinger = setInterval(function() {
         readSensor('sonar', function(dist) {
             showStatus("" + dist);
+            if(sonarVis)sonarVis.position.x=dist;
         });
     }, 125);
     try {
