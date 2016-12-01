@@ -109,13 +109,14 @@ void loop()  // Main code, to run repeatedly
         String str;
         str = "Got recieve : ";
         str += gotData;
-        
         speak(str.c_str());
-        gotData = 0;
-        /*
+        str="";
         while (Wire.available())str += Wire.read(); // receive byte as a character  
         speak(str.c_str());
-        */
+        
+        gotData = 0;
+        Wire.write(66);
+
     }
    //pingSonar();
     
