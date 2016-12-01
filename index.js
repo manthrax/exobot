@@ -16,7 +16,7 @@ function log(params){
 	for (var i = 0; i < arguments.length; i++)str+=arguments[i];
 	if(clientSock)
 		clientSock.send(str);
-	log(str);
+	console.log(str);
 }
 
 
