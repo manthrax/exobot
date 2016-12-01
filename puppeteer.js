@@ -12,13 +12,38 @@ function Puppeteer() {
 
     }
 
-    var sensorDefs={
-        sonar:{cmd:0,size:4,interpretLong}
+    var sensors={
+        sonar:{cmd:0,resp:4,delay:100,parser:interpretLong}
     }
+    
+    var activeSensor;
+    
     function readSensor(name,cb){
-        puppeteer.send({sensor:{cmd:0,send:true,data:""}})
-        puppeteer.send({sensor:{cmd:0,request:true,data:""}})
+        if(!activeSensor){
+            var sens = sensors[name];
+            sens.cb = cb;
+            puppeteer.send({sensor:{cmd:sens.cmd,send:true,data:""}});
+            if(sens.resp){
+                activeSensor = name;
+                setTimeout(function(){
+                    puppeteer.send({sensor:{cmd:0,request:true,data:""}})
+                },sens.delay);
+            }
+        }
     }
+
+    function dispatchSensorReading(data){
+        if(activeSensor){
+            activeSensor.parser(data,activeSensor.cb);
+            activeSensor = undefined;
+        }            
+    }
+    
+    var sonarPinger = setInterval(function(){
+        readSensor('sonar',function(dist){
+            showStatus(""+dist);
+        });
+    },1000);
 
     try {
         var connection = new WebSocket('ws://' + location.host,['soap', 'xmpp']);
@@ -35,9 +60,8 @@ function Puppeteer() {
         // Log messages from the server
         connection.onmessage = function(e) {
             if(e.data.charAt(0)==='{'){
-                var dat = JSON.parse(e.data);
-                var nlong = dat[0]|(dat[1]<<8)|(dat[2]<<16)|(dat[3]<<24);
-                console.log(nlong);
+                var dat = JSON.parse(e.data).rsp;
+                dispatchSensorReading(dat);
             }else
                 console.log('Server: ' + e.data);
         }
