@@ -150,9 +150,9 @@ wss.on("connection", function(ws) {
 				});
 			}
 			if(data.sensor){
-				sensorLink.writeBytes(data.sensor.cmd,data.sensor.data,function err(e){
+				sensorLink.writeBytes(data.sensor.cmd,data.sensor.data,function err(e,d){
 					ws.send("YIKES!");//{cmd:"error",data:"Sensor error!"});
-					console.log("SensorLink write failed!"+JSON.stringify(e));
+					console.log("SensorLink write failed!"+JSON.stringify(e)+":"+JSON.stringify(d));
 				});
 			}
 		}

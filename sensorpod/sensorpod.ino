@@ -38,13 +38,15 @@ void speak(const char* str){
   emicSerial.print('\n');
   while (emicSerial.read() != ':'); // Wait here until the Emic 2 responds with a ":" indicating it's ready to accept the next command
 }
- 
+
 void requestCallback(){
   speak("Got Request.");
 }
 
+volatile int gotData = 0;
+
 void receiveCallback(int count){
-  speak("Got Receive.");  
+  gotData = count;
 }
 
 void setup()  // Set up code called once on start-up
@@ -82,9 +84,9 @@ void loop()  // Main code, to run repeatedly
 {
   // Speak some text
   digitalWrite(ledPin, HIGH);         // Turn on LED while Emic is outputting audio
-  speak("Hello Mamajamas! I am Exobot.");
+  speak("Hello Mama jamas! I am Exo bot.");
   digitalWrite(ledPin, LOW);
-    
+ 
   delay(500);    // 1/2 second delay
     
   // Sing a song
@@ -95,13 +97,26 @@ void loop()  // Main code, to run repeatedly
   }
   digitalWrite(ledPin, LOW);
 
+  speak("System ready.");
+
   while(1)      // Demonstration complete!
   {
     delay(100);
     digitalWrite(ledPin, HIGH);
     delay(100);
     digitalWrite(ledPin, LOW);
-    
+    if(gotData>0){
+        String str;
+        str = "Got recieve : ";
+        str += gotData;
+        
+        speak(str.c_str());
+        gotData = 0;
+        /*
+        while (Wire.available())str += Wire.read(); // receive byte as a character  
+        speak(str.c_str());
+        */
+    }
    //pingSonar();
     
   }
