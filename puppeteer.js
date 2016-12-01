@@ -43,7 +43,7 @@ function Puppeteer() {
         readSensor('sonar',function(dist){
             showStatus(""+dist);
         });
-    },1000);
+    },250);
 
     try {
         var connection = new WebSocket('ws://' + location.host,['soap', 'xmpp']);
