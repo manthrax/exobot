@@ -299,23 +299,23 @@ function App() {
             window.addEventListener('mousemove', mmove, false);
             window.addEventListener('mousewheel', mwheel, false);
 
-        }
-        if(loadsFinished && !fadeDone){
-            var now = performance.now();
-            if(!fadeEndTime){
-                fadeEndTime = now+fadeDuration;
-                window.blocker.style.display = 'block';
-            }else if(now<fadeEndTime)
-            {
-                window.blocker.style.opacity = (fadeEndTime - now)/fadeDuration;
+        }else{
+            if(loadsFinished && !fadeDone){
+                var now = performance.now();
+                if(!fadeEndTime){
+                    fadeEndTime = now+fadeDuration;
+                    window.blocker.style.display = 'block';
+                }else if(now<fadeEndTime)
+                {
+                    window.blocker.style.opacity = (fadeEndTime - now)/fadeDuration;
 
-                return;
-            }else{
-                window.blocker.style.display = 'none';
-                fadeDone=true;
+                    return;
+                }else{
+                    window.blocker.style.display = 'none';
+                    fadeDone=true;
+                }
             }
-        }
-        
+        }        
         renderer.setSize(window.innerWidth, window.innerHeight);
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();

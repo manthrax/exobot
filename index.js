@@ -3,6 +3,20 @@ var http = require("http")
 var express = require("express")
 var fs = require("fs");
 var app = express()
+
+var i2c = require("i2c");
+
+
+var sensorLink = new i2c(0x08, {device: '/dev/i2c-1'});
+
+
+
+sensorLink.on('data', function(data) {
+	console.log("Got data from sensor:",JSON.stringify(data));
+});
+
+
+
 var makePwm;
 try{
  	makePwm = require( "adafruit-pca9685" );
@@ -133,6 +147,12 @@ wss.on("connection", function(ws) {
 				stream.once('open', function(fd) {
 				  stream.write(data.burnToBot.data);
 				  stream.end();
+				});
+			}
+			if(data.sensor){
+				sensorLink.writeBytes(data.sensor.cmd,data.sensor.data,function err(e){
+					ws.send({cmd:"error",data:"Sensor error!"});
+					console.log(e);
 				});
 			}
 		}
