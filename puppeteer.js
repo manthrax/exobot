@@ -68,7 +68,7 @@ function Puppeteer() {
         });
     }, 125);
 
-
+/*
 //1280 / 720
 function vidTest(){
     var video = document.createElement( 'video' );
@@ -89,7 +89,7 @@ function vidTest(){
     app.scene.add(vidVis);
 }
 vidTest();
-
+*/
 
     try {
         var connection = new WebSocket('ws://' + location.host,['soap', 'xmpp']);
