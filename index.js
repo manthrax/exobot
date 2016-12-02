@@ -4,10 +4,6 @@ var express = require("express")
 var fs = require("fs");
 var app = express()
 
-var i2c = require("i2c");
-
-
-var sensorLink = new i2c(0x08, {device: '/dev/i2c-1'});
 
 var clientSock;
 var makePwm;
@@ -23,9 +19,19 @@ function log(params){
 }
 
 
+var i2c;
+var sensorLink;
+try{
+i2c = require("i2c");
+sensorLink = new i2c(0x08, {device: '/dev/i2c-1'});
 sensorLink.on('data', function(data) {
 	log("Got data from sensor:",JSON.stringify(data));
 });
+}
+catch(err){
+	log("Couldn't load i2c library.")
+	sensorLink=function(){return {writeBytes:function(){},readBytes:function(){}}}
+}
 
 
 

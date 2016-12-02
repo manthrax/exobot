@@ -48,6 +48,8 @@ function Puppeteer() {
             activeSensor = undefined;
         }
     }
+
+
     var sonarVis;
     var material = new THREE.MeshPhongMaterial({
         color: 0xffff00,
@@ -65,6 +67,30 @@ function Puppeteer() {
             }
         });
     }, 125);
+
+
+//1280 / 720
+function vidTest(){
+    var video = document.createElement( 'video' );
+    video.loop = true;
+    video.muted = true;
+    video.src = "360 Degree Lens For the RaspberryPi Camera Module.mp4";
+   // video.setAttribute( 'webkit-playsinline', 'webkit-playsinline' );
+    video.play();
+    var texture = this.videoTex=new THREE.VideoTexture( video );
+    texture.minFilter = THREE.LinearFilter;
+    texture.format = THREE.RGBFormat;
+    var material   = new THREE.MeshBasicMaterial( { map : texture , side:THREE.DoubleSide} );
+    var vid = document.createElement('video');
+    var geometry = new THREE.SphereGeometry(200,20,10);
+    var vidVis;
+    vidVis = this.vidVis = new THREE.Mesh(geometry,material);
+    vidVis.rotation.z+=Math.PI*0.5;
+    app.scene.add(vidVis);
+}
+vidTest();
+
+
     try {
         var connection = new WebSocket('ws://' + location.host,['soap', 'xmpp']);
         connection.onopen = function() {
