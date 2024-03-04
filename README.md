@@ -42,3 +42,4 @@ Add this before the "exit 0" line.. this makes the bot code launch at startup.
 su pi -c '~/bot/exobot/nodebot.sh < /dev/null &'
 
 
+![image](https://github.com/manthrax/exobot/assets/350247/be4da3d7-04bc-418a-ba7c-898107a311dd)
