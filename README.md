@@ -1,3 +1,10 @@
+
+https://manthrax.github.io/exobot/index.html
+
+![image](https://github.com/manthrax/exobot/assets/350247/be4da3d7-04bc-418a-ba7c-898107a311dd)
+
+BOM:
+
 DROK DC Buck Converter x2
 https://www.amazon.com/DROK-Numerical-Switching-Adjustable-Stabilizers/dp/B00BYTEHQO/ref=pd_bxgy_23_img_2?ie=UTF8&psc=1&refRID=QJJMT22ZZ7SP7H3W6H8K
 
@@ -22,12 +29,6 @@ https://www.amazon.com/TowerPro-Micro-Airplane-Helicopter-Controls/dp/B01D6FEI1W
 
 16+20+37+22 = 95$
 
-
-
-
-
-
-
 sudo apt-get update
 sudo apt-get install node
 sudo npm install http
@@ -41,5 +42,3 @@ Add this before the "exit 0" line.. this makes the bot code launch at startup.
 
 su pi -c '~/bot/exobot/nodebot.sh < /dev/null &'
 
-
-![image](https://github.com/manthrax/exobot/assets/350247/be4da3d7-04bc-418a-ba7c-898107a311dd)
